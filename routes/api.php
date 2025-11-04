@@ -9,3 +9,4 @@ Route::get('/user', function (Request $request) {
 
 Route::get('/gettest', App\Http\Controllers\GetTestController::class);    //接続テストAPI
 Route::post('/register', App\Http\Controllers\RegisterController::class); //アカウント登録用API
+Route::post('/login', App\Http\Controllers\LoginController::class);       //ログインAPI
