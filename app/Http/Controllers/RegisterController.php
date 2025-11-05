@@ -20,7 +20,7 @@ class RegisterController extends Controller
         } while ($isExistUser != 0);
 
         //文字数チェック
-        $validator = Validator::make($request->all(), ['user_name' => 'required|max:16']);
+        $validator = Validator::make($request->all(), ['user_name' => 'required|max:10']);
         
         //バリデーションに失敗したら
         if ($validator->fails())
