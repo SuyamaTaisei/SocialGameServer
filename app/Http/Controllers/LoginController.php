@@ -22,9 +22,16 @@ class LoginController extends Controller
         ]);
         
         $response['result'] = config('common.RESPONSE_SUCCESS');
+
+        //エラー時
         if ($result == 0)
         {
             $response['result'] = -1;
+        }
+        //ログイン時に必要な情報を取得
+        else
+        {
+            $response = User::where('manage_id', $userData->manage_id)->first();
         }
 
         Auth::login($userData);
