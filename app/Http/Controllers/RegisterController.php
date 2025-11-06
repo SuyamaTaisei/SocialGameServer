@@ -7,11 +7,15 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use App\Models\Wallet;
 
 class RegisterController extends Controller
 {
     public function __invoke(Request $request)
     {
+        $result = 0;
+        $response['result'] = config('common.RESPONSE_SUCCESS');
+
         // ユーザーID生成(重複する場合は生成し直し)
         do
         {
@@ -30,7 +34,8 @@ class RegisterController extends Controller
         //成功したら
         $validated = $validator->safe();
 
-        $post = User::create([
+        //アカウント登録
+        $accountData = User::create([
             'id'              => $Id,
             'user_name'       => $validated['user_name'],
             'max_stamina'     => config('common.DEFAULT_STAMINA'),
@@ -39,6 +44,37 @@ class RegisterController extends Controller
             'last_login'      => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        return response()->json($post);
+        //ユーザー情報取得
+        $userData = User::where('id', $Id)->first();
+
+        //ウォレット登録
+        $walletData = Wallet::create([
+            'manage_id'       => $userData->manage_id,
+            'coin_amount'     => config('common.COIN_AMOUNT'),
+            'gem_free_amount' => config('common.GEM_FREE_AMOUNT'),
+            'gem_paid_amount' => config('common.GEM_PAID_AMOUNT'),
+        ]);
+
+        //ユーザー情報 と ウォレット情報があれば
+        if ($userData && $walletData)
+        {
+            $result = 1;
+        }
+
+        switch ($result)
+        {
+            case 0:
+                $response['result'] = -1;
+                break;
+            case 1:
+                $response =
+                [
+                    'users' => User::where('manage_id', $userData->manage_id)->first(),
+                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+                ];
+                break;
+        }
+
+        return response()->json($response);
     }
 }
