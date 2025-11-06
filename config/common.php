@@ -1,13 +1,20 @@
 <?php
 
 return [
-    'MASTER_DATA_VERSION' => 1,       //マスターデータのバージョン
+    'MASTER_DATA_VERSION' => 1,      //マスターデータのバージョン
     'USER_NAME'         => 'タロウ',
     'DEFAULT_STAMINA'   => 100,
-    // スタミナ関連
+
+    //スタミナ関連
     'STAMINA_RECOVERY_SECOND' => 18, //スタミナが回復するのにかかる秒数
-    'STAMINA_RECOVERY_VALUE' => 1,    //1回のスタミナ回復量
-    // レスポンス
+    'STAMINA_RECOVERY_VALUE' => 1,   //1回のスタミナ回復量
+
+    //ウォレット関連
+    'COIN_AMOUNT' => 0,
+    'GEM_FREE_AMOUNT' => 0,
+    'GEM_PAID_AMOUNT' => 0,
+
+    //レスポンス
     'RESPONSE_SUCCESS' => 0,
     'ERRCODE_VALIDATION' => 100,
     'ERRCODE_MASTER_VERSION' => 200,
