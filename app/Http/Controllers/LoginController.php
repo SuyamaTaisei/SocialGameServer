@@ -31,7 +31,10 @@ class LoginController extends Controller
                 break;
             //ログイン時に必要な情報を取得
             case 1:
-                $response = User::where('manage_id', $userData->manage_id)->first();
+                $response = 
+                [
+                    'users' => User::where('manage_id', $userData->manage_id)->first(),
+                ];
                 break;
         }
 
