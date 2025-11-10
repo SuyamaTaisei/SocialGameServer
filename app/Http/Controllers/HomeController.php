@@ -30,7 +30,11 @@ class HomeController extends Controller
                 break;
             //必要な情報を取得
             case 1:
-                $response = Wallet::where('manage_id', $userData->manage_id)->first();
+                $response =
+                [
+                    'users' => User::where('manage_id', $userData->manage_id)->first(),
+                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+                ];
                 break;
         }
 
