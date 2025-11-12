@@ -14,7 +14,10 @@ class MasterCheckController extends Controller
         if (!MasterDataService::CheckMasterDataVersion($client_master_version)) {
 			return config('common.ERROR_MASTER_DATA_UPDATE');
         }
-        $response = array('message' => 'MasterData Version Success');
-        return $response;
+		$response = 
+        [
+			'master_data_version' => config('common.MASTER_DATA_VERSION'),
+        ];
+        return response()->json($response);
     }
 }
