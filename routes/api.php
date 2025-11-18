@@ -13,3 +13,4 @@ Route::post('/login', App\Http\Controllers\LoginController::class); //ログイ�
 Route::post('/home', App\Http\Controllers\HomeController::class); //ホーム情報取得API
 Route::post('/check_master_data', App\Http\Controllers\MasterCheckController::class); //マスタデータチェック取得API
 Route::post('/get_master_data', App\Http\Controllers\MasterDataController::class); //マスタデータ取得API
+Route::post('/payment', App\Http\Controllers\PaymentController::class); //ショップ購入API

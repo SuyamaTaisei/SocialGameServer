@@ -19,6 +19,7 @@ return [
     'ERRCODE_VALIDATION'     => 100,
     'ERRCODE_MASTER_VERSION' => 200,
     'ERRCODE_LOGIN_SESSION'  => 403,
+    'ERRCODE_NOT_PAYMENT' => 0,
 
     //マスタデータ関連
     'MASTER_DATA_VERSION' => 1, //マスターデータのバージョン
