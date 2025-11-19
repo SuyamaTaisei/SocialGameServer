@@ -40,7 +40,8 @@ class PaymentController extends Controller
             $paidPay  = 0;
             $freePay  = 0;
             $paidCoin = $walletsData->coin_amount;
-            
+            $maxCount = 999999;            
+
             //各ショップカテゴリと支払いタイプ分岐
             if ($shop_category === 1001)
             {
@@ -60,10 +61,17 @@ class PaymentController extends Controller
                 }
             }
 
-            //マイナス時は購入失敗
+            //マイナス時は購入失敗 (残高不足時)
             if ($paidGem - $paidPay < 0 || $freeGem - $freePay < 0 || $paidCoin < 0)
             {
                 $result = 0;
+                return;
+            }
+
+            //残高上限を超えたら購入失敗
+            if ($paidGem > $maxCount || $freeGem > $maxCount || $paidCoin > $maxCount)
+            {
+                $result = -1;
                 return;
             }
 
@@ -78,6 +86,12 @@ class PaymentController extends Controller
 
         switch($result)
         {
+            case -1:
+                $response =
+                [
+                    'errcode' => config('common.ERRCODE_LIMIT_WALLETS'),
+                ];
+                break;
             case 0:
                 $response =
                 [
