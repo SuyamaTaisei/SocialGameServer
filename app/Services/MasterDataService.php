@@ -4,6 +4,14 @@ namespace App\Services;
 use App\Models\ShopCategory;
 use App\Models\ShopData;
 
+use App\Models\CharacterCategory;
+use App\Models\CharacterData;
+use App\Models\CharacterRarity;
+
+use App\Models\ItemCategory;
+use App\Models\ItemData;
+use App\Models\ItemRarity;
+
 class MasterDataService
 {
     //マスタデータ作成処理
@@ -17,6 +25,14 @@ class MasterDataService
         $master_data_list = array();
         $master_data_list['shop_categories'] = ShopCategory::all();
         $master_data_list['shop_data'] = ShopData::all();
+
+        $master_data_list['character_categories'] = CharacterCategory::all();
+        $master_data_list['character_data'] = CharacterData::all();
+        $master_data_list['character_rarities'] = CharacterRarity::all();
+
+        $master_data_list['item_categories'] = ItemCategory::all();
+        $master_data_list['item_data'] = ItemData::all();
+        $master_data_list['item_rarities'] = ItemRarity::all();
 
         //マスタデータをJSON形式で作成
         $json = json_encode($master_data_list);
