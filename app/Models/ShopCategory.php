@@ -20,16 +20,16 @@ class ShopCategory extends Model
     ];
 
     //ショップカテゴリのテーブル情報の取得
-    public static function GetMasterShopCategory()
+    public static function GetMasterShopCategories()
     {
         $master_data = MasterDataService::GetMasterData('shop_categories');
         return $master_data;
     }
 
     //ショップカテゴリのモデル情報の取得
-    public static function GetMasterDataShopCategory($category)
+    public static function GetMasterDataShopCategories($category)
     {
-        $master_data = self::GetMasterShopCategory();
+        $master_data = self::GetMasterShopCategories();
         foreach ($master_data as $column)
         {
             $model = new ShopCategory;

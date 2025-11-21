@@ -17,15 +17,15 @@ class ItemCategory extends Model
         'created_at',
     ];
 
-    public static function GetMasterItemCategory()
+    public static function GetMasterItemCategories()
     {
         $master_data = MasterDataService::GetMasterData('item_categories');
         return $master_data;
     }
 
-    public static function GetMasterDataItemCategory($category)
+    public static function GetMasterDataItemCategories($category)
     {
-        $master_data = self::GetMasterItemCategory();
+        $master_data = self::GetMasterItemCategories();
         foreach ($master_data as $column)
         {
             $model = new ItemCategory;

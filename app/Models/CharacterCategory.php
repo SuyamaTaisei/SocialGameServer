@@ -17,7 +17,7 @@ class CharacterCategory extends Model
         'created_at',
     ];
 
-    public static function GetMasterCharacterCategory()
+    public static function GetMasterCharacterCategories()
     {
         $master_data = MasterDataService::GetMasterData('character_categories');
         return $master_data;
@@ -25,7 +25,7 @@ class CharacterCategory extends Model
 
     public static function GetMasterDataCharacterCategory($category)
     {
-        $master_data = self::GetMasterCharacterCategory();
+        $master_data = self::GetMasterCharacterCategories();
         foreach ($master_data as $column)
         {
             $model = new CharacterCategory;

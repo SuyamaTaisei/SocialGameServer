@@ -17,15 +17,15 @@ class ItemRarity extends Model
         'created_at',
     ];
 
-    public static function GetMasterItemRarity()
+    public static function GetMasterItemRarities()
     {
         $master_data = MasterDataService::GetMasterData('item_rarities');
         return $master_data;
     }
 
-    public static function GetMasterDataItemRarity($id)
+    public static function GetMasterDataItemRarities($id)
     {
-        $master_data = self::GetMasterItemRarity();
+        $master_data = self::GetMasterItemRarities();
         foreach ($master_data as $column)
         {
             $model = new ItemRarity;

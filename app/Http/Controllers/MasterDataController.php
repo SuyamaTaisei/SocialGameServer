@@ -19,30 +19,30 @@ class MasterDataController extends Controller
     public function __invoke(Request $request)
 	{
 		//クライアント側に送信したいマスターデータを取得
-		$shop_category = ShopCategory::GetMasterShopCategory();
+		$shop_categories = ShopCategory::GetMasterShopCategories();
         $shop_data = ShopData::GetMasterShopData();
 
-		$character_category = CharacterCategory::GetMasterCharacterCategory();
+		$character_categories = CharacterCategory::GetMasterCharacterCategories();
 		$character_data = CharacterData::GetMasterCharacterData();
-		$character_rarity = CharacterRarity::GetMasterCharacterRarity();
+		$character_rarities = CharacterRarity::GetMasterCharacterRarities();
 
-		$item_category = ItemCategory::GetMasterItemCategory();
+		$item_categories = ItemCategory::GetMasterItemCategories();
 		$item_data = ItemData::GetMasterItemData();
-		$item_rarity = ItemRarity::GetMasterItemRarity();
+		$item_rarities = ItemRarity::GetMasterItemRarities();
 
 		$response = 
         [
 			'master_data_version' => config('common.MASTER_DATA_VERSION'),
-			'shop_category' => $shop_category,
+			'shop_categories' => $shop_categories,
             'shop_data' => $shop_data,
 
-			'character_category' => $character_category,
+			'character_categories' => $character_categories,
 			'character_data' => $character_data,
-			'character_rarity' => $character_rarity,
+			'character_rarities' => $character_rarities,
 
-			'item_category' => $item_category,
+			'item_categories' => $item_categories,
 			'item_data' => $item_data,
-			'item_rarity' => $item_rarity,
+			'item_rarities' => $item_rarities,
 		];
 
 		return response()->json($response);

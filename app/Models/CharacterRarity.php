@@ -17,15 +17,15 @@ class CharacterRarity extends Model
         'created_at',
     ];
 
-    public static function GetMasterCharacterRarity()
+    public static function GetMasterCharacterRarities()
     {
         $master_data = MasterDataService::GetMasterData('character_rarities');
         return $master_data;
     }
 
-    public static function GetMasterDataCharacterRarity($id)
+    public static function GetMasterDataCharacterRarities($id)
     {
-        $master_data = self::GetMasterCharacterRarity();
+        $master_data = self::GetMasterCharacterRarities();
         foreach ($master_data as $column)
         {
             $model = new CharacterRarity;

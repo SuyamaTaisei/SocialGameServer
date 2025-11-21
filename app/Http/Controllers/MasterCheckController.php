@@ -12,7 +12,7 @@ class MasterCheckController extends Controller
         //マスターデータチェック
         $client_master_version = $request->client_master_version;
         if (!MasterDataService::CheckMasterDataVersion($client_master_version)) {
-			return config('common.ERROR_MASTER_DATA_UPDATE');
+			return config('common.ERRCODE_MASTER_DATA_UPDATE');
         }
 		$response = 
         [
