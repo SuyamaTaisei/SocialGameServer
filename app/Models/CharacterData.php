@@ -29,10 +29,10 @@ class CharacterData extends Model
         foreach ($master_data as $column)
         {
             $model = new CharacterData;
-			$model->id                 = $column['id'];
-            $model->rarity_id          = $column['rarity_id'];
+			$model->id = $column['id'];
+            $model->rarity_id = $column['rarity_id'];
             $model->character_category = $column['character_category'];
-            $model->name               = $column['name'];
+            $model->name = $column['name'];
 
 			if ($id == $model->id)
             {

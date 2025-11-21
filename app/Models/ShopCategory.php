@@ -34,7 +34,7 @@ class ShopCategory extends Model
         {
             $model = new ShopCategory;
 			$model->category = $column['category'];
-			$model->name     = $column['name'];
+			$model->name = $column['name'];
 
 			if ($category == $model->category)
             {

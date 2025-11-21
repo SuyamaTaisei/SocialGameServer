@@ -30,7 +30,7 @@ class CharacterCategory extends Model
         {
             $model = new CharacterCategory;
 			$model->category = $column['category'];
-            $model->name     = $column['name'];
+            $model->name = $column['name'];
 
 			if ($category == $model->category)
             {

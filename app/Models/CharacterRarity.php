@@ -29,7 +29,7 @@ class CharacterRarity extends Model
         foreach ($master_data as $column)
         {
             $model = new CharacterRarity;
-			$model->id   = $column['id'];
+			$model->id = $column['id'];
             $model->name = $column['name'];
 
 			if ($id == $model->id)

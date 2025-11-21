@@ -64,7 +64,7 @@ class RegisterController extends Controller
         switch ($result)
         {
             case 0:
-                $response['result'] = -1;
+                $response['result'] = config('common.ERRCODE_REGISTER');
                 break;
             case 1:
                 $response =

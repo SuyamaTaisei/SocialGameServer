@@ -29,7 +29,7 @@ class ItemRarity extends Model
         foreach ($master_data as $column)
         {
             $model = new ItemRarity;
-			$model->id   = $column['id'];
+			$model->id = $column['id'];
             $model->name = $column['name'];
 
 			if ($id == $model->id)

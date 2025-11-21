@@ -19,6 +19,11 @@ return [
     'ERRCODE_VALIDATION' => 100,
     'ERRCODE_MASTER_VERSION' => 200,
     'ERRCODE_LOGIN_SESSION' => 403,
+
+    //アカウント登録時エラー
+    'ERRCODE_REGISTER' => -1,
+
+    //支払い時エラー
     'ERRCODE_NOT_PAYMENT' => 510,
     'ERRCODE_LIMIT_WALLETS' => 511,
 

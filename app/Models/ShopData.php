@@ -29,10 +29,10 @@ class ShopData extends Model
         foreach ($master_data as $column)
         {
             $model = new ShopData;
-			$model->product_id    = $column['product_id'];
+			$model->product_id = $column['product_id'];
 			$model->shop_category = $column['shop_category'];
-            $model->name          = $column['name'];
-            $model->price         = $column['price'];
+            $model->name = $column['name'];
+            $model->price = $column['price'];
 
 			if ($product_id == $model->product_id)
             {

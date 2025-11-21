@@ -29,12 +29,12 @@ class ItemData extends Model
         foreach ($master_data as $column)
         {
             $model = new ItemData;
-			$model->id            = $column['id'];
-            $model->rarity_id     = $column['rarity_id'];
+			$model->id = $column['id'];
+            $model->rarity_id = $column['rarity_id'];
             $model->item_category = $column['item_category'];
-            $model->name          = $column['name'];
-            $model->description   = $column['description'];
-            $model->value         = $column['value'];
+            $model->name = $column['name'];
+            $model->description = $column['description'];
+            $model->value = $column['value'];
 
 			if ($id == $model->id)
             {
