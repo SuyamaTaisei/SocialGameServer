@@ -23,7 +23,7 @@ class CharacterCategory extends Model
         return $master_data;
     }
 
-    public static function GetMasterDataCharacterCategory($category)
+    public static function GetMasterDataCharacterCategories($category)
     {
         $master_data = self::GetMasterCharacterCategories();
         foreach ($master_data as $column)
