@@ -14,6 +14,9 @@ use App\Models\ItemCategory;
 use App\Models\ItemData;
 use App\Models\ItemRarity;
 
+use App\Models\GachaPeriod;
+use App\Models\GachaData;
+
 class MasterDataController extends Controller
 {
     public function __invoke(Request $request)
@@ -30,6 +33,9 @@ class MasterDataController extends Controller
 		$item_data = ItemData::GetMasterItemData();
 		$item_rarities = ItemRarity::GetMasterItemRarities();
 
+		$gacha_periods = GachaPeriod::GetMasterGachaPeriods();
+		$gacha_data = GachaData::GetMasterGachaData();
+
 		$response = 
         [
 			'master_data_version' => config('common.MASTER_DATA_VERSION'),
@@ -43,6 +49,9 @@ class MasterDataController extends Controller
 			'item_categories' => $item_categories,
 			'item_data' => $item_data,
 			'item_rarities' => $item_rarities,
+
+			'gacha_periods' => $gacha_periods,
+			'gacha_data' => $gacha_data,
 		];
 
 		return response()->json($response);
