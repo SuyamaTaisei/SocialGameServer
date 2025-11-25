@@ -40,22 +40,22 @@ class PaymentController extends Controller
             $paidPay  = 0;
             $freePay  = 0;
             $paidCoin = $walletsData->coin_amount;
-            $maxCount = 999999;            
+            $maxCount = config('common.MAX_CURRENCY_VALUE');
 
             //各ショップカテゴリと支払いタイプ分岐
-            if ($shop_category === 1001)
+            if ($shop_category === config('common.SHOP_CATEGORY_GEM'))
             {
                 $paidGem += $paid_currency;
                 $freeGem += $free_currency;
             }
-            else if ($shop_category === 1002)
+            else if ($shop_category === config('common.SHOP_CATEGORY_ITEM'))
             {
-                if ($type == "Gem")
+                if ($type == config('common.PAYMENT_TYPE_GEM'))
                 {
                     $freePay = min($price, $freeGem);
                     $paidPay = $price - $freePay;
                 }
-                if ($type == "Coin")
+                if ($type == config('common.PAYMENT_TYPE_COIN'))
                 {
                     $paidCoin -= $coin_currency;
                 }
