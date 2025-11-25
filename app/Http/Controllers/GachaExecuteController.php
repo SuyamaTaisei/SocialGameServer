@@ -8,6 +8,8 @@ use App\Models\GachaData;
 use App\Models\GachaPeriod;
 use App\Models\CharacterInstance;
 use App\Models\CharacterData;
+use App\Models\ItemInstance;
+use App\Models\ItemData;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -41,8 +43,9 @@ class GachaExecuteController extends Controller
         //排出用データ
         $gachaResult = '';
         $newCharacterId = [];
+        $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gachaPeriod, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$gachaResult, $userData, $walletData)
+        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gachaPeriod, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$gachaResult, $userData, $walletData)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
@@ -138,7 +141,58 @@ class GachaExecuteController extends Controller
                 }
                 else
                 {
-                    //排出データを既に所有していれば、キャラクターのレアリティに応じて、アイテム(ガチャ報酬)を増やす処理を書く
+                    //排出したガチャのレアリティを取得
+                    $gachaRarityData = CharacterData::where('id', $data['character_id'])->first();
+                    $rarity_id = $gachaRarityData->rarity_id;
+
+                    //排出ガチャのレアリティに応じてitem_idと貰える数を指定
+                    switch ($rarity_id)
+                    {
+                        case config('common.GACHA_RARITY_1000'):
+                            $item_id = 1001;
+                            $amount_value = 1;
+                            break;
+                        case config('common.GACHA_RARITY_2000'):
+                            $item_id = 1002;
+                            $amount_value = 1;
+                            break;
+                        case config('common.GACHA_RARITY_3000'):
+                            $item_id = 1003;
+                            $amount_value = 1;
+                            break;
+                        case config('common.GACHA_RARITY_4000'):
+                            $item_id = 1004;
+                            $amount_value = 1;
+                            break;
+                    }
+
+                    //item_idをガチャ排出後に取得
+                    $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
+
+                    //初めてアイテムをもらった場合
+                    if ($exist_item === null)
+                    {
+                        ItemInstance::create([
+                            'manage_id' => $manage_id,
+                            'item_id'   => $item_id,
+                            'amount'    => $amount_value,
+                        ]);
+                    }
+
+                    //既にアイテムが存在していた場合
+                    else
+                    {
+                        $exist_item->update([
+                            'amount' => $exist_item->amount + $amount_value,
+                        ]);
+                    }
+
+                    //ガチャ報酬用レスポンス
+                    $exchangeItem[] =
+                    [
+                        'item_id' => $item_id,
+                        'amount'  => $amount_value,
+                    ];
                 }
             }
 
@@ -158,8 +212,10 @@ class GachaExecuteController extends Controller
                 [
                     'wallets' => Wallet::where('manage_id', $manage_id)->first(),
                     'character_instance' => CharacterInstance::where('manage_id', $manage_id)->get(),
+                    'item_instance' => ItemInstance::where('manage_id', $manage_id)->get(),
                     'gacha_result' => $releasedGachaId,
                     'new_characters' => $newCharacterId,
+                    'exchange_item' => $exchangeItem,
                 ];
                 break;
         }
