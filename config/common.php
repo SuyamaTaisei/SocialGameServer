@@ -43,6 +43,10 @@ return [
     //ガチャ実行関連
     'GACHA_NORMAL_PAYMENT' => 250,
     'GACHA_TOTAL_WEIGHT' => 100000,
+    'GACHA_RARITY_1000' => 1000,
+    'GACHA_RARITY_2000' => 2000,
+    'GACHA_RARITY_3000' => 3000,
+    'GACHA_RARITY_4000' => 4000,
 
     //ガチャ期間関連
     'GACHA_NORMAL_PERIOD' => 1001,
