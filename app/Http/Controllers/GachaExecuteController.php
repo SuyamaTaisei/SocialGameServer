@@ -212,11 +212,11 @@ class GachaExecuteController extends Controller
                 [
                     'users' => User::where('manage_id', $manage_id)->first(),
                     'wallets' => Wallet::where('manage_id', $manage_id)->first(),
-                    'character_instance' => CharacterInstance::where('manage_id', $manage_id)->get(),
-                    'item_instance' => ItemInstance::where('manage_id', $manage_id)->get(),
-                    'gacha_result' => $releasedGachaId,
+                    'character_instances' => CharacterInstance::where('manage_id', $manage_id)->get(),
+                    'item_instances' => ItemInstance::where('manage_id', $manage_id)->get(),
+                    'gacha_results' => $releasedGachaId,
                     'new_characters' => $newCharacterId,
-                    'exchange_item' => $exchangeItem,
+                    'exchange_items' => $exchangeItem,
                 ];
                 break;
         }

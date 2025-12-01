@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\ItemInstance;
+use App\Models\CharacterInstance;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -34,6 +36,8 @@ class HomeController extends Controller
                 [
                     'users' => User::where('manage_id', $userData->manage_id)->first(),
                     'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+                    'item_instances' => ItemInstance::where('manage_id', $userData->manage_id)->get(),
+                    'character_instances' => CharacterInstance::where('manage_id', $userData->manage_id)->get(),
                 ];
                 break;
         }
