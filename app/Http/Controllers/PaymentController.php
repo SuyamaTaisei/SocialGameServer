@@ -9,12 +9,13 @@ use App\Models\ShopData;
 use App\Models\Wallet;
 use App\Models\ItemInstance;
 use App\Models\CharacterInstance;
+use App\Services\ItemAddService;
 
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, ItemAddService $itemAddService)
     {
         //ユーザー情報取得
         $userData = User::where('id',$request->id)->first();
@@ -33,7 +34,7 @@ class PaymentController extends Controller
         $price         = $shopData->price;
 
         //計算処理
-        DB::transaction(function() use (&$result, $manage_id, $product_id, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price)
+        DB::transaction(function() use (&$result, $manage_id, $product_id, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price, $itemAddService)
         {
             //ウォレット情報取得
             $walletsData = Wallet::where('manage_id', $manage_id)->first();
@@ -118,26 +119,7 @@ class PaymentController extends Controller
                         break;
                 }
 
-                //item_idを購入後に取得
-                $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
-
-                //初めてアイテムをもらった場合
-                if ($exist_item === null)
-                {
-                    ItemInstance::create([
-                        'manage_id' => $manage_id,
-                        'item_id'   => $item_id,
-                        'amount'    => $amount_value,
-                    ]);
-                }
-
-                //既にアイテムが存在していた場合
-                else
-                {
-                    $exist_item->update([
-                        'amount' => $exist_item->amount + $amount_value,
-                    ]);
-                }
+                $itemAddService->AddItem($manage_id, $item_id, $amount_value);
             }
 
             $result = $walletsData->update([

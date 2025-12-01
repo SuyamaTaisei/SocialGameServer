@@ -10,12 +10,13 @@ use App\Models\CharacterInstance;
 use App\Models\CharacterData;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
+use App\Services\ItemAddService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class GachaExecuteController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, ItemAddService $itemAddService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
@@ -45,7 +46,7 @@ class GachaExecuteController extends Controller
         $newCharacterId = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gachaPeriod, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$gachaResult, $userData, $walletData)
+        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gachaPeriod, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
@@ -166,26 +167,7 @@ class GachaExecuteController extends Controller
                             break;
                     }
 
-                    //item_idをガチャ排出後に取得
-                    $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
-
-                    //初めてアイテムをもらった場合
-                    if ($exist_item === null)
-                    {
-                        ItemInstance::create([
-                            'manage_id' => $manage_id,
-                            'item_id'   => $item_id,
-                            'amount'    => $amount_value,
-                        ]);
-                    }
-
-                    //既にアイテムが存在していた場合
-                    else
-                    {
-                        $exist_item->update([
-                            'amount' => $exist_item->amount + $amount_value,
-                        ]);
-                    }
+                    $itemAddService->AddItem($manage_id, $item_id, $amount_value);
 
                     //ガチャ報酬用レスポンス
                     $exchangeItem[] =
