@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\ShopData;
 use App\Models\Wallet;
 use App\Models\ItemInstance;
+use App\Models\CharacterInstance;
 
 use Illuminate\Support\Facades\DB;
 
@@ -78,62 +79,65 @@ class PaymentController extends Controller
                 return;
             }
 
-            //商品IDに応じてitem_idと貰える数を指定
-            switch ($product_id)
+            if ($shop_category === config('common.SHOP_CATEGORY_ITEM'))
             {
-                case 10005:
-                    $item_id = 1001;
-                    $amount_value = 1;
-                    break;
-                case 10006:
-                    $item_id = 1002;
-                    $amount_value = 1;
-                    break;
-                case 10007:
-                    $item_id = 1003;
-                    $amount_value = 1;
-                    break;
-                case 10008:
-                    $item_id = 1004;
-                    $amount_value = 1;
-                    break;
-                case 10009:
-                    $item_id = 1001;
-                    $amount_value = 1;
-                    break;
-                case 10010:
-                    $item_id = 1002;
-                    $amount_value = 1;
-                    break;
-                case 10011:
-                    $item_id = 1003;
-                    $amount_value = 1;
-                    break;
-                case 10012:
-                    $item_id = 1004;
-                    $amount_value = 1;
-                    break;
-            }
+                //商品IDに応じてitem_idと貰える数を指定
+                switch ($product_id)
+                {
+                    case 10005:
+                        $item_id = 1001;
+                        $amount_value = 1;
+                        break;
+                    case 10006:
+                        $item_id = 1002;
+                        $amount_value = 1;
+                        break;
+                    case 10007:
+                        $item_id = 1003;
+                        $amount_value = 1;
+                        break;
+                    case 10008:
+                        $item_id = 1004;
+                        $amount_value = 1;
+                        break;
+                    case 10009:
+                        $item_id = 1001;
+                        $amount_value = 1;
+                        break;
+                    case 10010:
+                        $item_id = 1002;
+                        $amount_value = 1;
+                        break;
+                    case 10011:
+                        $item_id = 1003;
+                        $amount_value = 1;
+                        break;
+                    case 10012:
+                        $item_id = 1004;
+                        $amount_value = 1;
+                        break;
+                }
 
-            //item_idを購入後に取得
-            $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
+                //item_idを購入後に取得
+                $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
 
-            //初めてアイテムをもらった場合
-            if ($exist_item === null)
-            {
-                ItemInstance::create([
-                    'manage_id' => $manage_id,
-                    'item_id'   => $item_id,
-                    'amount'    => $amount_value,
-                ]);
-            }
+                //初めてアイテムをもらった場合
+                if ($exist_item === null)
+                {
+                    ItemInstance::create([
+                        'manage_id' => $manage_id,
+                        'item_id'   => $item_id,
+                        'amount'    => $amount_value,
+                    ]);
+                }
 
-            //既にアイテムが存在していた場合
-            else
-            {
-                $exist_item->update([
-                    'amount' => $exist_item->amount + $amount_value,
-                ]);
+                //既にアイテムが存在していた場合
+                else
+                {
+                    $exist_item->update([
+                        'amount' => $exist_item->amount + $amount_value,
+                    ]);
+                }
             }
 
             $result = $walletsData->update([
@@ -165,6 +169,7 @@ class PaymentController extends Controller
                     'users' => User::where('manage_id', $manage_id)->first(),
                     'wallets' => Wallet::where('manage_id',$manage_id)->first(),
                     'item_instances' => ItemInstance::where('manage_id', $manage_id)->get(),
+                    'character_instances' => CharacterInstance::where('manage_id', $manage_id)->get(),
                 ];
                 break;
         }
