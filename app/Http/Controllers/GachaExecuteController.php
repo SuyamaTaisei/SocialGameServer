@@ -33,7 +33,7 @@ class GachaExecuteController extends Controller
 
         //ガチャ期間データ
         $gachaPeriodData = GachaPeriod::where('id', $request->gacha_id)->first();
-        $gachaPeriod = $gachaPeriodData->id;
+        $gacha_id = $gachaPeriodData->single_cost;
 
         //抽選用データ
         $releasedGachaId = [];
@@ -46,19 +46,15 @@ class GachaExecuteController extends Controller
         $newCharacterId = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gachaPeriod, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
+        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gacha_id, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
             $paidPay = 0;
             $freePay = 0;
 
-            //ガチャ期間
-            switch ($gachaPeriod)
-            {
-                case config('common.GACHA_NORMAL_PERIOD'): $gachaCost = $gachaCount * config('common.GACHA_NORMAL_PAYMENT');
-                break;
-            }
+            //ガチャ期間に応じた取得
+            $gachaCost = $gachaCount * $gacha_id;
 
             //ウォレット更新(無償ジェム優先)
             $freePay = min($gachaCost, $freeGem);
@@ -144,28 +140,10 @@ class GachaExecuteController extends Controller
                 {
                     //排出したガチャのレアリティを取得
                     $gachaRarityData = CharacterData::where('id', $data['character_id'])->first();
-                    $rarity_id = $gachaRarityData->rarity_id;
+                    $rarity_id = ItemData::where('rarity_id', $gachaRarityData->rarity_id)->first();
 
-                    //排出ガチャのレアリティに応じてitem_idと貰える数を指定
-                    switch ($rarity_id)
-                    {
-                        case config('common.GACHA_RARITY_1000'):
-                            $item_id = 1001;
-                            $amount_value = 1;
-                            break;
-                        case config('common.GACHA_RARITY_2000'):
-                            $item_id = 1002;
-                            $amount_value = 1;
-                            break;
-                        case config('common.GACHA_RARITY_3000'):
-                            $item_id = 1003;
-                            $amount_value = 1;
-                            break;
-                        case config('common.GACHA_RARITY_4000'):
-                            $item_id = 1004;
-                            $amount_value = 1;
-                            break;
-                    }
+                    $item_id = $rarity_id->id;
+                    $amount_value = 1;
 
                     $itemAddService->AddItem($manage_id, $item_id, $amount_value);
 
