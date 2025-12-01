@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\ShopData;
 use App\Models\Wallet;
+use App\Models\ItemInstance;
 
 use Illuminate\Support\Facades\DB;
 
@@ -16,10 +17,12 @@ class PaymentController extends Controller
     {
         //ユーザー情報取得
         $userData = User::where('id',$request->id)->first();
+        $manage_id = $userData->manage_id;
 
         //商品ID情報取得
         $shopData = ShopData::where('product_id', $request->product_id)->first();
-        
+        $product_id = $shopData->product_id;        
+
         //該当商品IDの各詳細情報取得
         $paid_currency = $shopData->paid_currency;
         $free_currency = $shopData->free_currency;
@@ -29,10 +32,10 @@ class PaymentController extends Controller
         $price         = $shopData->price;
 
         //計算処理
-        DB::transaction(function() use (&$result, $userData, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price)
+        DB::transaction(function() use (&$result, $manage_id, $product_id, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price)
         {
             //ウォレット情報取得
-            $walletsData = Wallet::where('manage_id', $userData->manage_id)->first();
+            $walletsData = Wallet::where('manage_id', $manage_id)->first();
 
             //初期化
             $paidGem  = $walletsData->gem_paid_amount;
@@ -75,6 +78,64 @@ class PaymentController extends Controller
                 return;
             }
 
+            //商品IDに応じてitem_idと貰える数を指定
+            switch ($product_id)
+            {
+                case 10005:
+                    $item_id = 1001;
+                    $amount_value = 1;
+                    break;
+                case 10006:
+                    $item_id = 1002;
+                    $amount_value = 1;
+                    break;
+                case 10007:
+                    $item_id = 1003;
+                    $amount_value = 1;
+                    break;
+                case 10008:
+                    $item_id = 1004;
+                    $amount_value = 1;
+                    break;
+                case 10009:
+                    $item_id = 1001;
+                    $amount_value = 1;
+                    break;
+                case 10010:
+                    $item_id = 1002;
+                    $amount_value = 1;
+                    break;
+                case 10011:
+                    $item_id = 1003;
+                    $amount_value = 1;
+                    break;
+                case 10012:
+                    $item_id = 1004;
+                    $amount_value = 1;
+                    break;
+            }
+
+            //item_idを購入後に取得
+            $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
+
+            //初めてアイテムをもらった場合
+            if ($exist_item === null)
+            {
+                ItemInstance::create([
+                    'manage_id' => $manage_id,
+                    'item_id'   => $item_id,
+                    'amount'    => $amount_value,
+                ]);
+            }
+
+            //既にアイテムが存在していた場合
+            else
+            {
+                $exist_item->update([
+                    'amount' => $exist_item->amount + $amount_value,
+                ]);
+            }
+
             $result = $walletsData->update([
                 'gem_paid_amount' => $paidGem - $paidPay,
                 'gem_free_amount' => $freeGem - $freePay,
@@ -101,8 +162,9 @@ class PaymentController extends Controller
             case 1:
                 $response =
                 [
-                    'users' => User::where('manage_id', $userData->manage_id)->first(),
-                    'wallets' => Wallet::where('manage_id',$userData->manage_id)->first(),
+                    'users' => User::where('manage_id', $manage_id)->first(),
+                    'wallets' => Wallet::where('manage_id',$manage_id)->first(),
+                    'item_instances' => ItemInstance::where('manage_id', $manage_id)->get(),
                 ];
                 break;
         }
