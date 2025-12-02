@@ -3,6 +3,7 @@
 namespace App\Services;
 use App\Models\ShopCategory;
 use App\Models\ShopData;
+use App\Models\ShopReward;
 
 use App\Models\CharacterCategory;
 use App\Models\CharacterData;
@@ -28,6 +29,7 @@ class MasterDataService
         $master_data_list = array();
         $master_data_list['shop_categories'] = ShopCategory::all();
         $master_data_list['shop_data'] = ShopData::all();
+        $master_data_list['shop_rewards'] = ShopReward::all();
 
         $master_data_list['character_categories'] = CharacterCategory::all();
         $master_data_list['character_data'] = CharacterData::all();

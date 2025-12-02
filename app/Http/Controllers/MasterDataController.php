@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ShopCategory;
 use App\Models\ShopData;
+use App\Models\ShopReward;
 
 use App\Models\CharacterCategory;
 use App\Models\CharacterData;
@@ -24,6 +25,7 @@ class MasterDataController extends Controller
 		//クライアント側に送信したいマスターデータを取得
 		$shop_categories = ShopCategory::GetMasterShopCategories();
         $shop_data = ShopData::GetMasterShopData();
+		$shop_rewards = ShopReward::GetMasterShopRewards();
 
 		$character_categories = CharacterCategory::GetMasterCharacterCategories();
 		$character_data = CharacterData::GetMasterCharacterData();
@@ -41,6 +43,7 @@ class MasterDataController extends Controller
 			'master_data_version' => config('common.MASTER_DATA_VERSION'),
 			'shop_categories' => $shop_categories,
             'shop_data' => $shop_data,
+			'shop_rewards' => $shop_rewards,
 
 			'character_categories' => $character_categories,
 			'character_data' => $character_data,
