@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\User;
 use App\Models\ShopData;
+use App\Models\ShopReward;
 use App\Models\Wallet;
 use App\Models\ItemInstance;
 use App\Models\CharacterInstance;
@@ -83,41 +84,9 @@ class PaymentController extends Controller
             if ($shop_category === config('common.SHOP_CATEGORY_ITEM'))
             {
                 //商品IDに応じてitem_idと貰える数を指定
-                switch ($product_id)
-                {
-                    case 10005:
-                        $item_id = 1001;
-                        $amount_value = 1;
-                        break;
-                    case 10006:
-                        $item_id = 1002;
-                        $amount_value = 1;
-                        break;
-                    case 10007:
-                        $item_id = 1003;
-                        $amount_value = 1;
-                        break;
-                    case 10008:
-                        $item_id = 1004;
-                        $amount_value = 1;
-                        break;
-                    case 10009:
-                        $item_id = 1001;
-                        $amount_value = 1;
-                        break;
-                    case 10010:
-                        $item_id = 1002;
-                        $amount_value = 1;
-                        break;
-                    case 10011:
-                        $item_id = 1003;
-                        $amount_value = 1;
-                        break;
-                    case 10012:
-                        $item_id = 1004;
-                        $amount_value = 1;
-                        break;
-                }
+                $shop_reward = ShopReward::where('product_id', $product_id)->first();
+                $item_id = $shop_reward->item_id;
+                $amount_value = $shop_reward->amount;
 
                 $itemAddService->AddItem($manage_id, $item_id, $amount_value);
             }
