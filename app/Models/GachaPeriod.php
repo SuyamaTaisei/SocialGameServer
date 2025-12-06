@@ -31,6 +31,8 @@ class GachaPeriod extends Model
             $model = new GachaPeriod;
 			$model->id = $column['id'];
             $model->name = $column['name'];
+            $model->single_count = $column['single_count'];
+            $model->multi_count = $column['multi_count'];
             $model->single_cost = $column['single_cost'];
             $model->multi_cost = $column['multi_cost'];
             $model->start = $column['start'];
