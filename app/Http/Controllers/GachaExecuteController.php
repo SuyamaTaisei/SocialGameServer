@@ -191,7 +191,7 @@ class GachaExecuteController extends Controller
                     'gacha_results' => $releasedGachaId,
                     'new_characters' => $newCharacterId,
                     'single_exchange_items' => $singleExchangeItem,
-                    'exchange_items' => array_values($exchangeItem), //連想配列を数字添え字の形に変換して返す
+                    'total_exchange_items' => array_values($exchangeItem), //連想配列を数字添え字の形に変換して返す
                 ];
                 break;
         }
