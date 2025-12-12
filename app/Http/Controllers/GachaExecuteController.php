@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\GachaData;
 use App\Models\GachaPeriod;
+use App\Models\GachaLog;
 use App\Models\CharacterInstance;
 use App\Models\CharacterData;
 use App\Models\ItemInstance;
@@ -28,12 +29,15 @@ class GachaExecuteController extends Controller
         //ウォレット情報
         $walletData = Wallet::where('manage_id',$manage_id)->first();
        
-        //ガチャデータ
+        //ガチャデータの全てのガチャ取得
         $gachaData = GachaData::where('gacha_id', $request->gacha_id)->get();
 
-        //ガチャ期間データ
+        //ガチャデータの期間取得
+        $gacha_id = GachaData::where('gacha_id', $request->gacha_id)->first();
+
+        //ガチャデータの価格取得
         $gachaPeriodData = GachaPeriod::where('id', $request->gacha_id)->first();
-        $gacha_id = $gachaPeriodData->single_cost;
+        $default_cost = $gachaPeriodData->single_cost;
 
         //抽選用データ
         $releasedGachaId = [];
@@ -47,7 +51,7 @@ class GachaExecuteController extends Controller
         $singleExchangeItem = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gacha_id, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
+        DB::transaction(function() use (&$result, $manage_id, $gachaData, $gacha_id, $default_cost, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
@@ -55,7 +59,7 @@ class GachaExecuteController extends Controller
             $freePay = 0;
 
             //ガチャ期間に応じた取得
-            $gachaCost = $gachaCount * $gacha_id;
+            $gachaCost = $gachaCount * $default_cost;
 
             //ウォレット更新(無償ジェム優先)
             $freePay = min($gachaCost, $freeGem);
@@ -168,6 +172,13 @@ class GachaExecuteController extends Controller
                     //ガチャ報酬集計表示用レスポンス。変換したitem_id内のamountに合計値を設定
                     $exchangeItem[$item_id]['amount'] += $amount_value;
                 }
+
+                //回した分ガチャ履歴作成
+                GachaLog::create([
+                    'manage_id' => $manage_id,
+                    'gacha_id' => $gacha_id->gacha_id,
+                    'character_id' => $data['character_id'],
+                ]);
             }
 
             $result = 1;
@@ -192,6 +203,7 @@ class GachaExecuteController extends Controller
                     'new_characters' => $newCharacterId,
                     'single_exchange_items' => $singleExchangeItem,
                     'total_exchange_items' => array_values($exchangeItem), //連想配列を数字添え字の形に変換して返す
+                    'gacha_logs' => GachaLog::where('manage_id', $manage_id)->get(),
                 ];
                 break;
         }
