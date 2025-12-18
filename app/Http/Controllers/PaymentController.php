@@ -26,6 +26,9 @@ class PaymentController extends Controller
         $shopData = ShopData::where('product_id', $request->product_id)->first();
         $product_id = $shopData->product_id;        
 
+        //購入数
+        $buyAmount = $request->amount;
+
         //該当商品IDの各詳細情報取得
         $paid_currency = $shopData->paid_currency;
         $free_currency = $shopData->free_currency;
@@ -35,7 +38,7 @@ class PaymentController extends Controller
         $price         = $shopData->price;
 
         //計算処理
-        DB::transaction(function() use (&$result, $manage_id, $product_id, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price, $itemAddService)
+        DB::transaction(function() use (&$result, $manage_id, $product_id, $buyAmount, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price, $itemAddService)
         {
             //ウォレット情報取得
             $walletsData = Wallet::where('manage_id', $manage_id)->first();
@@ -58,12 +61,13 @@ class PaymentController extends Controller
             {
                 if ($type == config('common.PAYMENT_TYPE_GEM'))
                 {
-                    $freePay = min($price, $freeGem);
-                    $paidPay = $price - $freePay;
+                    $totalPrice = $price * $buyAmount;
+                    $freePay = min($totalPrice, $freeGem);
+                    $paidPay = $totalPrice - $freePay;
                 }
                 if ($type == config('common.PAYMENT_TYPE_COIN'))
                 {
-                    $paidCoin -= $coin_currency;
+                    $paidCoin -= $coin_currency * $buyAmount;
                 }
             }
 
@@ -86,9 +90,7 @@ class PaymentController extends Controller
                 //商品IDに応じてitem_idと貰える数を指定
                 $shop_reward = ShopReward::where('product_id', $product_id)->first();
                 $item_id = $shop_reward->item_id;
-                $amount_value = $shop_reward->amount;
-
-                $itemAddService->AddItem($manage_id, $item_id, $amount_value);
+                $itemAddService->AddItem($manage_id, $item_id, $buyAmount);
             }
 
             $result = $walletsData->update([
