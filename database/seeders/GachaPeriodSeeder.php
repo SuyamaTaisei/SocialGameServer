@@ -18,6 +18,8 @@ class GachaPeriodSeeder extends Seeder
             [
                 'id' => 1001,
                 'name' => '通常ガチャ',
+                'single_count' => 1,
+                'multi_count' => 10,
                 'single_cost' => 250,
                 'multi_cost' => 2500,
                 'start' => '2000-01-01 00:00:00',
