@@ -19,14 +19,14 @@ class ItemData extends Model
 
     public static function GetMasterItemData()
     {
-        $master_data = MasterDataService::GetMasterData('item_data');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('item_data');
+        return $masterData;
     }
 
     public static function GetMasterDataItemData($id)
     {
-        $master_data = self::GetMasterItemData();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterItemData();
+        foreach ($masterData as $column)
         {
             $model = new ItemData;
 			$model->id = $column['id'];

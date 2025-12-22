@@ -19,14 +19,14 @@ class ItemCategory extends Model
 
     public static function GetMasterItemCategories()
     {
-        $master_data = MasterDataService::GetMasterData('item_categories');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('item_categories');
+        return $masterData;
     }
 
     public static function GetMasterDataItemCategories($category)
     {
-        $master_data = self::GetMasterItemCategories();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterItemCategories();
+        foreach ($masterData as $column)
         {
             $model = new ItemCategory;
 			$model->category = $column['category'];

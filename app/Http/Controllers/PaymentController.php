@@ -20,28 +20,28 @@ class PaymentController extends Controller
     {
         //ユーザー情報取得
         $userData = User::where('id',$request->id)->first();
-        $manage_id = $userData->manage_id;
+        $manageId = $userData->manage_id;
 
         //商品ID情報取得
         $shopData = ShopData::where('product_id', $request->product_id)->first();
-        $product_id = $shopData->product_id;        
+        $productId = $shopData->product_id;        
 
         //購入数
         $buyAmount = $request->amount;
 
         //該当商品IDの各詳細情報取得
-        $paid_currency = $shopData->paid_currency;
-        $free_currency = $shopData->free_currency;
-        $coin_currency = $shopData->coin_currency;
-        $shop_category = $shopData->shop_category;
+        $paidCurrency = $shopData->paid_currency;
+        $freeCurrency = $shopData->free_currency;
+        $coinCurrency = $shopData->coin_currency;
+        $shopCategory = $shopData->shop_category;
         $type          = $shopData->type;
         $price         = $shopData->price;
 
         //計算処理
-        DB::transaction(function() use (&$result, $manage_id, $product_id, $buyAmount, $paid_currency, $free_currency, $coin_currency, $shop_category, $type, $price, $itemAddService)
+        DB::transaction(function() use (&$result, $manageId, $productId, $buyAmount, $paidCurrency, $freeCurrency, $coinCurrency, $shopCategory, $type, $price, $itemAddService)
         {
             //ウォレット情報取得
-            $walletsData = Wallet::where('manage_id', $manage_id)->first();
+            $walletsData = Wallet::where('manage_id', $manageId)->first();
 
             //初期化
             $paidGem  = $walletsData->gem_paid_amount;
@@ -52,12 +52,12 @@ class PaymentController extends Controller
             $maxCount = config('common.MAX_CURRENCY_VALUE');
 
             //各ショップカテゴリと支払いタイプ分岐
-            if ($shop_category === config('common.SHOP_CATEGORY_GEM'))
+            if ($shopCategory === config('common.SHOP_CATEGORY_GEM'))
             {
-                $paidGem += $paid_currency;
-                $freeGem += $free_currency;
+                $paidGem += $paidCurrency;
+                $freeGem += $freeCurrency;
             }
-            else if ($shop_category === config('common.SHOP_CATEGORY_ITEM'))
+            else if ($shopCategory === config('common.SHOP_CATEGORY_ITEM'))
             {
                 if ($type == config('common.PAYMENT_TYPE_GEM'))
                 {
@@ -67,7 +67,7 @@ class PaymentController extends Controller
                 }
                 if ($type == config('common.PAYMENT_TYPE_COIN'))
                 {
-                    $paidCoin -= $coin_currency * $buyAmount;
+                    $paidCoin -= $coinCurrency * $buyAmount;
                 }
             }
 
@@ -85,12 +85,12 @@ class PaymentController extends Controller
                 return;
             }
 
-            if ($shop_category === config('common.SHOP_CATEGORY_ITEM'))
+            if ($shopCategory === config('common.SHOP_CATEGORY_ITEM'))
             {
                 //商品IDに応じてitem_idと貰える数を指定
-                $shop_reward = ShopReward::where('product_id', $product_id)->first();
-                $item_id = $shop_reward->item_id;
-                $itemAddService->AddItem($manage_id, $item_id, $buyAmount);
+                $shopReward = ShopReward::where('product_id', $productId)->first();
+                $itemId = $shopReward->item_id;
+                $itemAddService->AddItem($manageId, $itemId, $buyAmount);
             }
 
             $result = $walletsData->update([
@@ -119,10 +119,10 @@ class PaymentController extends Controller
             case 1:
                 $response =
                 [
-                    'users' => User::where('manage_id', $manage_id)->first(),
-                    'wallets' => Wallet::where('manage_id',$manage_id)->first(),
-                    'item_instances' => ItemInstance::where('manage_id', $manage_id)->get(),
-                    'character_instances' => CharacterInstance::where('manage_id', $manage_id)->get(),
+                    'users' => User::where('manage_id', $manageId)->first(),
+                    'wallets' => Wallet::where('manage_id',$manageId)->first(),
+                    'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+                    'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
                 ];
                 break;
         }
