@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Wallet;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -16,7 +17,10 @@ class RegisterController extends Controller
         $result = config('common.RESPONSE_FAILED');
         $response['result'] = config('common.RESPONSE_SUCCESS');
 
-        // ユーザーID生成(重複する場合は生成し直し)
+        //ユーザーデータ
+        $userData = 0;
+
+        //ユーザーID生成(重複する場合は生成し直し)
         do
         {
             $Id = Str::ulid();
@@ -34,32 +38,31 @@ class RegisterController extends Controller
         //成功したら
         $validated = $validator->safe();
 
-        //アカウント登録
-        $accountData = User::create([
-            'id'              => $Id,
-            'user_name'       => $validated['user_name'],
-            'max_stamina'     => config('common.DEFAULT_STAMINA'),
-            'last_stamina'    => config('common.DEFAULT_STAMINA'),
-            'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
-            'last_login'      => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        //ユーザー情報取得
-        $userData = User::where('id', $Id)->first();
-
-        //ウォレット登録
-        $walletData = Wallet::create([
-            'manage_id'       => $userData->manage_id,
-            'coin_amount'     => config('common.COIN_AMOUNT'),
-            'gem_free_amount' => config('common.GEM_FREE_AMOUNT'),
-            'gem_paid_amount' => config('common.GEM_PAID_AMOUNT'),
-        ]);
-
-        //ユーザー情報 と ウォレット情報があれば
-        if ($userData && $walletData)
+        DB::transaction(function() use (&$result, $Id, &$userData, $validated)
         {
+            //アカウント登録
+            $accountData = User::create([
+                'id'              => $Id,
+                'user_name'       => $validated['user_name'],
+                'max_stamina'     => config('common.DEFAULT_STAMINA'),
+                'last_stamina'    => config('common.DEFAULT_STAMINA'),
+                'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
+                'last_login'      => Carbon::now()->format('Y-m-d H:i:s'),
+            ]);
+
+            //ユーザー情報取得
+            $userData = User::where('id', $Id)->first();
+
+            //ウォレット登録
+            $walletData = Wallet::create([
+                'manage_id'       => $userData->manage_id,
+                'coin_amount'     => config('common.COIN_AMOUNT'),
+                'gem_free_amount' => config('common.GEM_FREE_AMOUNT'),
+                'gem_paid_amount' => config('common.GEM_PAID_AMOUNT'),
+            ]);
+
             $result = config('common.RESPONSE_SUCCESS');
-        }
+        });
 
         switch ($result)
         {
