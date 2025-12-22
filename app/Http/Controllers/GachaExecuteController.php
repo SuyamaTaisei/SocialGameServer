@@ -181,18 +181,18 @@ class GachaExecuteController extends Controller
                 ]);
             }
 
-            $result = 1;
+            $result = config('common.RESPONSE_SUCCESS');
         });
 
         switch($result)
         {
-            case 0:
+            case config('common.RESPONSE_FAILED'):
                 $response =
                 [
                     'errcode' => config('common.ERRCODE_NOT_PAYMENT'),
                 ];
                 break;
-            case 1:
+            case config('common.RESPONSE_SUCCESS'):
                 $response =
                 [
                     'users' => User::where('manage_id', $manageId)->first(),

@@ -13,7 +13,7 @@ class RegisterController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $result = 0;
+        $result = config('common.RESPONSE_FAILED');
         $response['result'] = config('common.RESPONSE_SUCCESS');
 
         // ユーザーID生成(重複する場合は生成し直し)
@@ -58,15 +58,15 @@ class RegisterController extends Controller
         //ユーザー情報 と ウォレット情報があれば
         if ($userData && $walletData)
         {
-            $result = 1;
+            $result = config('common.RESPONSE_SUCCESS');
         }
 
         switch ($result)
         {
-            case 0:
-                $response['result'] = config('common.ERRCODE_REGISTER');
+            case config('common.RESPONSE_FAILED'):
+                $response['result'] = config('common.RESPONSE_ERROR');
                 break;
-            case 1:
+            case config('common.RESPONSE_SUCCESS'):
                 $response =
                 [
                     'users' => User::where('manage_id', $userData->manage_id)->first(),

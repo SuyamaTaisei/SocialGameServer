@@ -1,6 +1,7 @@
 <?php
 
-return [
+return
+[
     //ユーザー関連
     'USER_NAME' => 'タロウ',
     'DEFAULT_STAMINA' => 100,
@@ -19,15 +20,14 @@ return [
     'ERRCODE_MASTER_DATA_UPDATE' => 0,
     'ERRCODE_MASTER_VERSION' => 200,
 
-    //成功レスポンス
-    'RESPONSE_SUCCESS' => 0,
+    //レスポンス状態
+    'RESPONSE_SUCCESS' => 1,
+    'RESPONSE_FAILED' => 0,
+    'RESPONSE_ERROR' => -1,
 
     //ログイン関連
     'ERRCODE_VALIDATION' => 100,
     'ERRCODE_LOGIN_SESSION' => 403,
-
-    //アカウント登録関連
-    'ERRCODE_REGISTER' => -1,
 
     //支払い関連
     'ERRCODE_NOT_PAYMENT' => 510,
@@ -41,13 +41,9 @@ return [
     'PAYMENT_TYPE_COIN' => 'Coin',
 
     //ガチャ実行関連
-    'GACHA_NORMAL_PAYMENT' => 250,
     'GACHA_TOTAL_WEIGHT' => 100000,
     'GACHA_RARITY_1000' => 1000,
     'GACHA_RARITY_2000' => 2000,
     'GACHA_RARITY_3000' => 3000,
     'GACHA_RARITY_4000' => 4000,
-
-    //ガチャ期間関連
-    'GACHA_NORMAL_PERIOD' => 1001,
 ];

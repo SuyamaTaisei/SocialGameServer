@@ -34,8 +34,8 @@ class PaymentController extends Controller
         $freeCurrency = $shopData->free_currency;
         $coinCurrency = $shopData->coin_currency;
         $shopCategory = $shopData->shop_category;
-        $type          = $shopData->type;
-        $price         = $shopData->price;
+        $type         = $shopData->type;
+        $price        = $shopData->price;
 
         //計算処理
         DB::transaction(function() use (&$result, $manageId, $productId, $buyAmount, $paidCurrency, $freeCurrency, $coinCurrency, $shopCategory, $type, $price, $itemAddService)
@@ -74,14 +74,14 @@ class PaymentController extends Controller
             //マイナス時は購入失敗 (残高不足時)
             if ($paidGem - $paidPay < 0 || $freeGem - $freePay < 0 || $paidCoin < 0)
             {
-                $result = 0;
+                $result = config('common.RESPONSE_FAILED');
                 return;
             }
 
             //残高上限を超えたら購入失敗
             if ($paidGem > $maxCount || $freeGem > $maxCount || $paidCoin > $maxCount)
             {
-                $result = -1;
+                $result = config('common.RESPONSE_ERROR');
                 return;
             }
 
@@ -99,24 +99,24 @@ class PaymentController extends Controller
                 'coin_amount'     => $paidCoin,
             ]);
 
-            $result = 1;
+            $result = config('common.RESPONSE_SUCCESS');
         });
 
         switch($result)
         {
-            case -1:
+            case config('common.RESPONSE_ERROR'):
                 $response =
                 [
                     'errcode' => config('common.ERRCODE_LIMIT_WALLETS'),
                 ];
                 break;
-            case 0:
+            case config('common.RESPONSE_FAILED'):
                 $response =
                 [
                     'errcode' => config('common.ERRCODE_NOT_PAYMENT'),
                 ];
                 break;
-            case 1:
+            case config('common.RESPONSE_SUCCESS'):
                 $response =
                 [
                     'users' => User::where('manage_id', $manageId)->first(),
