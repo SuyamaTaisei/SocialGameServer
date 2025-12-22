@@ -18,11 +18,14 @@ class LoginController extends Controller
         //ユーザー情報取得
         $userData = User::where('id', $request->id)->first();
 
-        //最終ログイン時間更新
-        $result = User::where('manage_id', $userData->manage_id)->update([
-            'last_login' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-        
+        DB::transaction(function() use (&$result, $userData)
+        {
+            //最終ログイン時間更新
+            $result = User::where('manage_id', $userData->manage_id)->update([
+                'last_login' => Carbon::now()->format('Y-m-d H:i:s'),
+            ]);
+        });
+
         switch ($result)
         {
             //エラー時
