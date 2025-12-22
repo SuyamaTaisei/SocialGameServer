@@ -19,14 +19,14 @@ class CharacterCategory extends Model
 
     public static function GetMasterCharacterCategories()
     {
-        $master_data = MasterDataService::GetMasterData('character_categories');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('character_categories');
+        return $masterData;
     }
 
     public static function GetMasterDataCharacterCategories($category)
     {
-        $master_data = self::GetMasterCharacterCategories();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterCharacterCategories();
+        foreach ($masterData as $column)
         {
             $model = new CharacterCategory;
 			$model->category = $column['category'];

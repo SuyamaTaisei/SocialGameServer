@@ -19,14 +19,14 @@ class GachaPeriod extends Model
 
     public static function GetMasterGachaPeriods()
     {
-        $master_data = MasterDataService::GetMasterData('gacha_periods');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('gacha_periods');
+        return $masterData;
     }
 
     public static function GetMasterDataGachaPeriods($id)
     {
-        $master_data = self::GetMasterGachaPeriods();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterGachaPeriods();
+        foreach ($masterData as $column)
         {
             $model = new GachaPeriod;
 			$model->id = $column['id'];

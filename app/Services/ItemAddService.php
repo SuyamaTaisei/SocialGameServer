@@ -7,26 +7,26 @@ use App\Models\ItemInstance;
 //アイテム追加用Serviceクラス
 class ItemAddService
 {
-    public function AddItem(int $manage_id, int $item_id, int $amount_value)
+    public function AddItem(int $manageId, int $itemId, int $amountValue)
     {
         //item_idを取得
-        $exist_item = ItemInstance::where('manage_id', $manage_id)->where('item_id', $item_id)->first();
+        $existItem = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->first();
 
         //初めてアイテムをもらった場合
-        if ($exist_item === null)
+        if ($existItem === null)
         {
             ItemInstance::create([
-                'manage_id' => $manage_id,
-                'item_id'   => $item_id,
-                'amount'    => $amount_value,
+                'manage_id' => $manageId,
+                'item_id'   => $itemId,
+                'amount'    => $amountValue,
             ]);
         }
 
         //既にアイテムが存在していた場合
         else
         {
-            $exist_item->update([
-                'amount' => $exist_item->amount + $amount_value,
+            $existItem->update([
+                'amount' => $existItem->amount + $amountValue,
             ]);
         }
     }

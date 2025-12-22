@@ -12,7 +12,7 @@ class HomeController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $result = 0;
+        $result = config('common.RESPONSE_FAILED');
         $response['result'] = config('common.RESPONSE_SUCCESS');
 
         //ユーザー情報取得
@@ -21,17 +21,17 @@ class HomeController extends Controller
         //ユーザー情報があれば
         if ($userData)
         {
-            $result = 1;
+            $result = config('common.RESPONSE_SUCCESS');
         }
         
         switch ($result)
         {
             //エラー時
-            case 0:
-                $response['result'] = -1;
+            case config('common.RESPONSE_FAILED'):
+                $response['result'] = config('common.RESPONSE_ERROR');
                 break;
             //必要な情報を取得
-            case 1:
+            case config('common.RESPONSE_SUCCESS'):
                 $response =
                 [
                     'users' => User::where('manage_id', $userData->manage_id)->first(),

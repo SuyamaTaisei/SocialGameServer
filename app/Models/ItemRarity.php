@@ -19,14 +19,14 @@ class ItemRarity extends Model
 
     public static function GetMasterItemRarities()
     {
-        $master_data = MasterDataService::GetMasterData('item_rarities');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('item_rarities');
+        return $masterData;
     }
 
     public static function GetMasterDataItemRarities($id)
     {
-        $master_data = self::GetMasterItemRarities();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterItemRarities();
+        foreach ($masterData as $column)
         {
             $model = new ItemRarity;
 			$model->id = $column['id'];

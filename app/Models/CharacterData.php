@@ -19,14 +19,14 @@ class CharacterData extends Model
 
     public static function GetMasterCharacterData()
     {
-        $master_data = MasterDataService::GetMasterData('character_data');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('character_data');
+        return $masterData;
     }
 
     public static function GetMasterDataCharacterData($id)
     {
-        $master_data = self::GetMasterCharacterData();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterCharacterData();
+        foreach ($masterData as $column)
         {
             $model = new CharacterData;
 			$model->id = $column['id'];

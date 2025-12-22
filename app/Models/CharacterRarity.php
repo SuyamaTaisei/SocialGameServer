@@ -19,14 +19,14 @@ class CharacterRarity extends Model
 
     public static function GetMasterCharacterRarities()
     {
-        $master_data = MasterDataService::GetMasterData('character_rarities');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('character_rarities');
+        return $masterData;
     }
 
     public static function GetMasterDataCharacterRarities($id)
     {
-        $master_data = self::GetMasterCharacterRarities();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterCharacterRarities();
+        foreach ($masterData as $column)
         {
             $model = new CharacterRarity;
 			$model->id = $column['id'];

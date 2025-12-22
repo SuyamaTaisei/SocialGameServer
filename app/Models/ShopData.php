@@ -19,14 +19,14 @@ class ShopData extends Model
 
     public static function GetMasterShopData()
     {
-        $master_data = MasterDataService::GetMasterData('shop_data');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('shop_data');
+        return $masterData;
     }
 
     public static function GetMasterDataShopData($product_id)
     {
-        $master_data = self::GetMasterShopData();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterShopData();
+        foreach ($masterData as $column)
         {
             $model = new ShopData;
 			$model->product_id = $column['product_id'];

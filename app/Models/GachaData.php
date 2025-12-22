@@ -19,14 +19,14 @@ class GachaData extends Model
 
     public static function GetMasterGachaData()
     {
-        $master_data = MasterDataService::GetMasterData('gacha_data');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('gacha_data');
+        return $masterData;
     }
 
     public static function GetMasterDataGachaData($gacha_id)
     {
-        $master_data = self::GetMasterGachaData();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterGachaData();
+        foreach ($masterData as $column)
         {
             $model = new GachaData;
 			$model->gacha_id = $column['gacha_id'];

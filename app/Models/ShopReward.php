@@ -27,14 +27,14 @@ class ShopReward extends Model
 
     public static function GetMasterShopRewards()
     {
-        $master_data = MasterDataService::GetMasterData('shop_rewards');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('shop_rewards');
+        return $masterData;
     }
 
     public static function GetMasterDataShopRewards($id)
     {
-        $master_data = self::GetMasterShopRewards();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterShopRewards();
+        foreach ($masterData as $column)
         {
             $model = new ShopReward;
 			$model->id = $column['id'];

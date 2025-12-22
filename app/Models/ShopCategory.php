@@ -22,15 +22,15 @@ class ShopCategory extends Model
     //ショップカテゴリのテーブル情報の取得
     public static function GetMasterShopCategories()
     {
-        $master_data = MasterDataService::GetMasterData('shop_categories');
-        return $master_data;
+        $masterData = MasterDataService::GetMasterData('shop_categories');
+        return $masterData;
     }
 
     //ショップカテゴリのモデル情報の取得
     public static function GetMasterDataShopCategories($category)
     {
-        $master_data = self::GetMasterShopCategories();
-        foreach ($master_data as $column)
+        $masterData = self::GetMasterShopCategories();
+        foreach ($masterData as $column)
         {
             $model = new ShopCategory;
 			$model->category = $column['category'];
