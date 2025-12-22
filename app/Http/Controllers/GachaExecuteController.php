@@ -121,11 +121,11 @@ class GachaExecuteController extends Controller
         
             foreach($getCharacterId as $data)
             {
-                //回したガチャが所持済みかどうか確認
+                //排出されたキャラが所持済みかどうか確認
                 $exist = CharacterInstance::where('manage_id',$manageId)->where('character_id',$data['character_id'])->first();
                 if($exist == null)
                 {
-                    //未所持なら取得したガチャの所持レコードを作成
+                    //未所持なら取得したキャラの所持レコードを作成
                     CharacterInstance::create([
                         'manage_id' => $manageId,
                         'character_id' => $data['character_id'],
@@ -138,7 +138,7 @@ class GachaExecuteController extends Controller
                 }
                 else
                 {
-                    //排出したガチャのレアリティを取得
+                    //排出したキャラのレアリティを取得
                     $gachaRarityData = CharacterData::where('id', $data['character_id'])->first();
                     $rarityId = ItemData::where('rarity_id', $gachaRarityData->rarity_id)->first();
 
