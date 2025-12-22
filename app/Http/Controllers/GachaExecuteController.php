@@ -12,12 +12,13 @@ use App\Models\CharacterData;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
 use App\Services\ItemAddService;
+use App\Services\GachaCalcService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class GachaExecuteController extends Controller
 {
-    public function __invoke(Request $request, ItemAddService $itemAddService)
+    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
@@ -50,7 +51,20 @@ class GachaExecuteController extends Controller
         $singleExchangeItem = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manageId, $gachaData, $gachaId, $defaultCost, &$weightData, $gachaCount, &$getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $userData, $walletData, $itemAddService)
+        //ガチャデータ取得
+        foreach($gachaData as $data)
+        {
+            $weightData[] =
+            [
+                'character_id' => $data->character_id,
+                'weight' => $data->weight,
+            ];
+        }
+
+        //ガチャ抽選計算サービス
+        $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $weightData);
+
+        DB::transaction(function() use (&$result, $manageId, $gachaId, $defaultCost, $gachaCount, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
@@ -78,47 +92,6 @@ class GachaExecuteController extends Controller
                 'gem_free_amount' => $freeGem - $freePay,
             ]);
 
-            //ガチャデータ取得
-            foreach($gachaData as $data)
-            {
-                $weightData[] =
-                [
-                    'character_id' => $data->character_id,
-                    'weight' => $data->weight,
-                ];
-            }
-        
-            //ガチャ計算
-            for($i = 0; $i < $gachaCount; $i++)
-            {
-                $gachaResult = false;
-                
-                //重み合計
-                $totalWeight = config('common.GACHA_TOTAL_WEIGHT');
-
-                //乱数生成
-                $randomValue = mt_rand(0, $totalWeight);
-
-                //重みと乱数を比較
-                foreach($weightData as $data)
-                {
-                    $weight = $data['weight'];
-                    if($weight >= $randomValue)
-                    {
-                        //ガチャ結果のIDを保存
-                        $gachaResult = (int)$data['character_id'];
-                        break;
-                    }
-                    $randomValue -= $weight;
-                }
-
-                //ガチャで排出したデータの追加
-                $getCharacterId[] =
-                [
-                    'character_id' => $gachaResult,
-                ];
-            }
-        
             foreach($getCharacterId as $data)
             {
                 //排出されたキャラが所持済みかどうか確認
@@ -145,6 +118,7 @@ class GachaExecuteController extends Controller
                     $itemId = $rarityId->id;
                     $amountValue = 1;
 
+                    //アイテム追加サービス
                     $itemAddService->AddItem($manageId, $itemId, $amountValue);
 
                     //ガチャ報酬単一表示用レスポンス
