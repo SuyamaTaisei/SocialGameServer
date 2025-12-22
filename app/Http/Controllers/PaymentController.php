@@ -29,17 +29,17 @@ class PaymentController extends Controller
         //購入数
         $buyAmount = $request->amount;
 
-        //該当商品IDの各詳細情報取得
-        $paidCurrency = $shopData->paid_currency;
-        $freeCurrency = $shopData->free_currency;
-        $coinCurrency = $shopData->coin_currency;
-        $shopCategory = $shopData->shop_category;
-        $type         = $shopData->type;
-        $price        = $shopData->price;
-
         //計算処理
-        DB::transaction(function() use (&$result, $manageId, $productId, $buyAmount, $paidCurrency, $freeCurrency, $coinCurrency, $shopCategory, $type, $price, $itemAddService)
+        DB::transaction(function() use (&$result, $manageId, $productId, $buyAmount, $shopData, $itemAddService)
         {
+            //該当商品IDの各詳細情報取得
+            $paidCurrency = $shopData->paid_currency;
+            $freeCurrency = $shopData->free_currency;
+            $coinCurrency = $shopData->coin_currency;
+            $shopCategory = $shopData->shop_category;
+            $type         = $shopData->type;
+            $price        = $shopData->price;
+
             //ウォレット情報取得
             $walletsData = Wallet::where('manage_id', $manageId)->first();
 
