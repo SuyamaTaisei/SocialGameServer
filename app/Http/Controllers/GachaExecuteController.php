@@ -40,7 +40,7 @@ class GachaExecuteController extends Controller
         $defaultCost = $gachaPeriodData->single_cost;
 
         //抽選用データ
-        $releasedGachaId = [];
+        $getCharacterId = [];
 
         //重みデータ
         $weightData = [];
@@ -51,7 +51,7 @@ class GachaExecuteController extends Controller
         $singleExchangeItem = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manageId, $gachaData, $gachaId, $defaultCost, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
+        DB::transaction(function() use (&$result, $manageId, $gachaData, $gachaId, $defaultCost, &$weightData, $gachaCount, &$getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
@@ -118,13 +118,13 @@ class GachaExecuteController extends Controller
                 }
 
                 //ガチャで排出したデータの追加
-                $releasedGachaId[] =
+                $getCharacterId[] =
                 [
                     'character_id' => $gachaResult,
                 ];
             }
         
-            foreach($releasedGachaId as $data)
+            foreach($getCharacterId as $data)
             {
                 //回したガチャが所持済みかどうか確認
                 $exist = CharacterInstance::where('manage_id',$manageId)->where('character_id',$data['character_id'])->first();
@@ -199,7 +199,7 @@ class GachaExecuteController extends Controller
                     'wallets' => Wallet::where('manage_id', $manageId)->first(),
                     'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
                     'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
-                    'gacha_results' => $releasedGachaId,
+                    'gacha_results' => $getCharacterId,
                     'new_characters' => $newCharacterId,
                     'single_exchange_items' => $singleExchangeItem,
                     'total_exchange_items' => array_values($exchangeItem), //連想配列を数字添え字の形に変換して返す
