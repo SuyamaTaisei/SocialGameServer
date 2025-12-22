@@ -46,17 +46,14 @@ class GachaExecuteController extends Controller
         $weightData = [];
 
         //排出用データ
-        $gachaResult = '';
         $newCharacterId = [];
         $singleExchangeItem = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manageId, $gachaData, $gachaId, $defaultCost, &$weightData, $gachaCount, &$getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
+        DB::transaction(function() use (&$result, $manageId, $gachaData, $gachaId, $defaultCost, &$weightData, $gachaCount, &$getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $userData, $walletData, $itemAddService)
         {
             $paidGem = $walletData->gem_paid_amount;
             $freeGem = $walletData->gem_free_amount;
-            $paidPay = 0;
-            $freePay = 0;
 
             //ガチャ期間に応じた取得
             $gachaCost = $gachaCount * $defaultCost;
@@ -101,8 +98,6 @@ class GachaExecuteController extends Controller
 
                 //乱数生成
                 $randomValue = mt_rand(0, $totalWeight);
-
-                $weight = 0;
 
                 //重みと乱数を比較
                 foreach($weightData as $data)
