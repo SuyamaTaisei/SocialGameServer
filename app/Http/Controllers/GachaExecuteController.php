@@ -13,12 +13,13 @@ use App\Models\ItemInstance;
 use App\Models\ItemData;
 use App\Services\ItemAddService;
 use App\Services\GachaCalcService;
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class GachaExecuteController extends Controller
 {
-    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService)
+    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
@@ -64,25 +65,20 @@ class GachaExecuteController extends Controller
         //ガチャ抽選計算サービス
         $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $weightData);
 
-        DB::transaction(function() use (&$result, $manageId, $gachaId, $defaultCost, $gachaCount, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService)
+        //支払いサービス
+        $paymentData = $paymentService->PaymentGem($walletData, $defaultCost, $gachaCount);
+
+        DB::transaction(function() use (&$result, $manageId, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService, $paymentData)
         {
-            $paidGem = $walletData->gem_paid_amount;
-            $freeGem = $walletData->gem_free_amount;
-
-            //ガチャ期間に応じた取得
-            $gachaCost = $gachaCount * $defaultCost;
-
-            //ウォレット更新(無償ジェム優先)
-            $freePay = min($gachaCost, $freeGem);
-            $paidPay = $gachaCost - $freePay;
+            $paidGem = $paymentData['paidGem'];
+            $freeGem = $paymentData['freeGem'];
+            $paidPay = $paymentData['paidPay'];
+            $freePay = $paymentData['freePay'];
 
             //マイナス時は購入失敗 (残高不足時)
             if ($paidGem - $paidPay < 0 || $freeGem - $freePay < 0)
             {
-                $response =
-                [
-                    'errcode' => config('common.ERRCODE_NOT_PAYMENT'),
-                ];
+                $result = config('common.RESPONSE_FAILED');
                 return;
             }
 
