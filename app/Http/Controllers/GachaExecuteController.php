@@ -12,12 +12,14 @@ use App\Models\CharacterData;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
 use App\Services\ItemAddService;
+use App\Services\GachaCalcService;
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class GachaExecuteController extends Controller
 {
-    public function __invoke(Request $request, ItemAddService $itemAddService)
+    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
@@ -40,38 +42,43 @@ class GachaExecuteController extends Controller
         $defaultCost = $gachaPeriodData->single_cost;
 
         //抽選用データ
-        $releasedGachaId = [];
+        $getCharacterId = [];
 
         //重みデータ
         $weightData = [];
 
         //排出用データ
-        $gachaResult = '';
         $newCharacterId = [];
         $singleExchangeItem = [];
         $exchangeItem = [];
 
-        DB::transaction(function() use (&$result, $manageId, $gachaData, $gachaId, $defaultCost, &$weightData, $gachaCount, &$releasedGachaId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, &$gachaResult, $userData, $walletData, $itemAddService)
+        //ガチャデータ取得
+        foreach($gachaData as $data)
         {
-            $paidGem = $walletData->gem_paid_amount;
-            $freeGem = $walletData->gem_free_amount;
-            $paidPay = 0;
-            $freePay = 0;
+            $weightData[] =
+            [
+                'character_id' => $data->character_id,
+                'weight' => $data->weight,
+            ];
+        }
 
-            //ガチャ期間に応じた取得
-            $gachaCost = $gachaCount * $defaultCost;
+        //ガチャ抽選計算サービス
+        $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $weightData);
 
-            //ウォレット更新(無償ジェム優先)
-            $freePay = min($gachaCost, $freeGem);
-            $paidPay = $gachaCost - $freePay;
+        //支払いサービス
+        $paymentData = $paymentService->PaymentGem($walletData, $defaultCost, $gachaCount);
+
+        DB::transaction(function() use (&$result, $manageId, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService, $paymentData)
+        {
+            $paidGem = $paymentData['paidGem'];
+            $freeGem = $paymentData['freeGem'];
+            $paidPay = $paymentData['paidPay'];
+            $freePay = $paymentData['freePay'];
 
             //マイナス時は購入失敗 (残高不足時)
             if ($paidGem - $paidPay < 0 || $freeGem - $freePay < 0)
             {
-                $response =
-                [
-                    'errcode' => config('common.ERRCODE_NOT_PAYMENT'),
-                ];
+                $result = config('common.RESPONSE_FAILED');
                 return;
             }
 
@@ -81,56 +88,13 @@ class GachaExecuteController extends Controller
                 'gem_free_amount' => $freeGem - $freePay,
             ]);
 
-            //ガチャデータ取得
-            foreach($gachaData as $data)
+            foreach($getCharacterId as $data)
             {
-                $weightData[] =
-                [
-                    'character_id' => $data->character_id,
-                    'weight' => $data->weight,
-                ];
-            }
-        
-            //ガチャ計算
-            for($i = 0; $i < $gachaCount; $i++)
-            {
-                $gachaResult = false;
-                
-                //重み合計
-                $totalWeight = config('common.GACHA_TOTAL_WEIGHT');
-
-                //乱数生成
-                $randomValue = mt_rand(0, $totalWeight);
-
-                $weight = 0;
-
-                //重みと乱数を比較
-                foreach($weightData as $data)
-                {
-                    $weight = $data['weight'];
-                    if($weight >= $randomValue)
-                    {
-                        //ガチャ結果のIDを保存
-                        $gachaResult = (int)$data['character_id'];
-                        break;
-                    }
-                    $randomValue -= $weight;
-                }
-
-                //ガチャで排出したデータの追加
-                $releasedGachaId[] =
-                [
-                    'character_id' => $gachaResult,
-                ];
-            }
-        
-            foreach($releasedGachaId as $data)
-            {
-                //回したガチャが所持済みかどうか確認
+                //排出されたキャラが所持済みかどうか確認
                 $exist = CharacterInstance::where('manage_id',$manageId)->where('character_id',$data['character_id'])->first();
                 if($exist == null)
                 {
-                    //未所持なら取得したガチャの所持レコードを作成
+                    //未所持なら取得したキャラの所持レコードを作成
                     CharacterInstance::create([
                         'manage_id' => $manageId,
                         'character_id' => $data['character_id'],
@@ -143,13 +107,14 @@ class GachaExecuteController extends Controller
                 }
                 else
                 {
-                    //排出したガチャのレアリティを取得
+                    //排出したキャラのレアリティを取得
                     $gachaRarityData = CharacterData::where('id', $data['character_id'])->first();
                     $rarityId = ItemData::where('rarity_id', $gachaRarityData->rarity_id)->first();
 
                     $itemId = $rarityId->id;
                     $amountValue = 1;
 
+                    //アイテム追加サービス
                     $itemAddService->AddItem($manageId, $itemId, $amountValue);
 
                     //ガチャ報酬単一表示用レスポンス
@@ -199,7 +164,7 @@ class GachaExecuteController extends Controller
                     'wallets' => Wallet::where('manage_id', $manageId)->first(),
                     'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
                     'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
-                    'gacha_results' => $releasedGachaId,
+                    'gacha_results' => $getCharacterId,
                     'new_characters' => $newCharacterId,
                     'single_exchange_items' => $singleExchangeItem,
                     'total_exchange_items' => array_values($exchangeItem), //連想配列を数字添え字の形に変換して返す
