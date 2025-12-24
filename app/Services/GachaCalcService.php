@@ -2,13 +2,31 @@
 
 namespace App\Services;
 
+use App\Models\GachaData;
+
 //ガチャ抽選計算用Serviceクラス
 class GachaCalcService
 {
-    public function GachaCalculate(int $gachaCount, array $weightData): array
+    public function GachaCalculate(int $gachaCount, int $gachaId): array
     {
+        //ガチャデータの全てのガチャ取得
+        $gachaData = GachaData::where('gacha_id', $gachaId)->get();
+
         //抽選用データ
         $getCharacterId = [];
+
+        //重みデータ
+        $weightData = [];
+
+        //ガチャデータ取得
+        foreach($gachaData as $data)
+        {
+            $weightData[] =
+            [
+                'character_id' => $data->character_id,
+                'weight' => $data->weight,
+            ];
+        }
 
         //weightカラムの値を全て取得して合計値にする
         $totalWeight = array_sum(array_column($weightData, 'weight'));
@@ -19,7 +37,7 @@ class GachaCalcService
             $gachaResult = false;
             
             //乱数生成
-            $randomValue = mt_rand(0, $totalWeight);
+            $randomValue = mt_rand(1, $totalWeight);
 
             //重みと乱数を比較
             foreach($weightData as $data)

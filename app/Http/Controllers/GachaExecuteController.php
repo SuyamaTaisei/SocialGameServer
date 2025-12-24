@@ -33,9 +33,6 @@ class GachaExecuteController extends Controller
         //ガチャ回数
         $gachaCount = $request->gacha_count;
 
-        //ガチャデータの全てのガチャ取得
-        $gachaData = GachaData::where('gacha_id', $request->gacha_id)->get();
-
         //ガチャデータの期間取得
         $gachaId = GachaData::where('gacha_id', $request->gacha_id)->first();
 
@@ -46,26 +43,13 @@ class GachaExecuteController extends Controller
         //抽選用データ
         $getCharacterId = [];
 
-        //重みデータ
-        $weightData = [];
-
         //排出用データ
         $newCharacterId = [];
         $singleExchangeItem = [];
         $exchangeItem = [];
 
-        //ガチャデータ取得
-        foreach($gachaData as $data)
-        {
-            $weightData[] =
-            [
-                'character_id' => $data->character_id,
-                'weight' => $data->weight,
-            ];
-        }
-
         //ガチャ抽選計算サービス
-        $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $weightData);
+        $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $request->gacha_id);
 
         DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
         {
