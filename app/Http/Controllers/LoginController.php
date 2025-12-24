@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\GachaLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class LoginController extends Controller
                 $response = 
                 [
                     'users' => User::where('manage_id', $userData->manage_id)->first(),
+                    'gacha_logs' => GachaLog::where('manage_id', $userData->manage_id)->get(),
                 ];
                 break;
         }
