@@ -24,6 +24,8 @@ class GachaExecuteController extends Controller
 {
     public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService, GachaResultService $gachaResultService)
     {
+        $result = config('common.RESPONSE_FAILED');
+
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
@@ -31,9 +33,6 @@ class GachaExecuteController extends Controller
         //ガチャ回数
         $gachaCount = $request->gacha_count;
 
-        //ウォレット情報
-        $walletData = Wallet::where('manage_id',$manageId)->first();
-       
         //ガチャデータの全てのガチャ取得
         $gachaData = GachaData::where('gacha_id', $request->gacha_id)->get();
 
@@ -68,28 +67,14 @@ class GachaExecuteController extends Controller
         //ガチャ抽選計算サービス
         $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $weightData);
 
-        //支払いサービス
-        $paymentData = $paymentService->PaymentGem($walletData, $defaultCost, $gachaCount);
-
-        DB::transaction(function() use (&$result, $manageId, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService, $paymentData, $gachaResultService)
+        DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
         {
-            $paidGem = $paymentData['paidGem'];
-            $freeGem = $paymentData['freeGem'];
-            $paidPay = $paymentData['paidPay'];
-            $freePay = $paymentData['freePay'];
-
-            //マイナス時は購入失敗 (残高不足時)
-            if ($paidGem - $paidPay < 0 || $freeGem - $freePay < 0)
+            //支払いサービス
+            if (!$paymentService->PaymentGem($manageId, $defaultCost, $gachaCount))
             {
                 $result = config('common.RESPONSE_FAILED');
                 return;
             }
-
-            //ウォレット更新
-            $result = $walletData->update([
-                'gem_paid_amount' => $paidGem - $paidPay,
-                'gem_free_amount' => $freeGem - $freePay,
-            ]);
 
             //ガチャ結果サービス
             $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $exchangeItem, $singleExchangeItem, $itemAddService);
