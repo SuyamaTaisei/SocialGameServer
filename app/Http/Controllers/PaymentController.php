@@ -11,13 +11,16 @@ use App\Models\Wallet;
 use App\Models\ItemInstance;
 use App\Models\CharacterInstance;
 use App\Services\ItemAddService;
+use App\Services\PaymentService;
 
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    public function __invoke(Request $request, ItemAddService $itemAddService)
+    public function __invoke(Request $request, ItemAddService $itemAddService, PaymentService $paymentService)
     {
+        $result = config('common.RESPONSE_FAILED');
+
         //ユーザー情報取得
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
@@ -30,7 +33,7 @@ class PaymentController extends Controller
         $buyAmount = $request->amount;
 
         //計算処理
-        DB::transaction(function() use (&$result, $manageId, $productId, $buyAmount, $shopData, $itemAddService)
+        DB::transaction(function() use (&$result, $manageId, $productId, $buyAmount, $shopData, $itemAddService, $paymentService)
         {
             //該当商品IDの各詳細情報取得
             $paidCurrency = $shopData->paid_currency;
@@ -40,49 +43,34 @@ class PaymentController extends Controller
             $type         = $shopData->type;
             $price        = $shopData->price;
 
-            //ウォレット情報取得
-            $walletsData = Wallet::where('manage_id', $manageId)->first();
-
-            //初期化
-            $paidGem  = $walletsData->gem_paid_amount;
-            $freeGem  = $walletsData->gem_free_amount;
-            $paidPay  = 0;
-            $freePay  = 0;
-            $paidCoin = $walletsData->coin_amount;
-            $maxCount = config('common.MAX_CURRENCY_VALUE');
-
             //各ショップカテゴリと支払いタイプ分岐
             if ($shopCategory === config('common.SHOP_CATEGORY_GEM'))
             {
-                $paidGem += $paidCurrency;
-                $freeGem += $freeCurrency;
+                //支払いサービス
+                if (!$paymentService->PaymentMoney($manageId, $paidCurrency, $freeCurrency))
+                {
+                    $result = config('common.RESPONSE_ERROR');
+                    return;
+                }
             }
             else if ($shopCategory === config('common.SHOP_CATEGORY_ITEM'))
             {
                 if ($type == config('common.PAYMENT_TYPE_GEM'))
                 {
-                    $totalPrice = $price * $buyAmount;
-                    $freePay = min($totalPrice, $freeGem);
-                    $paidPay = $totalPrice - $freePay;
+                    if (!$paymentService->PaymentGem($manageId, $price, $buyAmount))
+                    {
+                        $result = config('common.RESPONSE_FAILED');
+                        return;
+                    }
                 }
                 if ($type == config('common.PAYMENT_TYPE_COIN'))
                 {
-                    $paidCoin -= $coinCurrency * $buyAmount;
+                    if (!$paymentService->PaymentCoin($manageId, $coinCurrency, $buyAmount))
+                    {
+                        $result = config('common.RESPONSE_FAILED');
+                        return;
+                    }
                 }
-            }
-
-            //マイナス時は購入失敗 (残高不足時)
-            if ($paidGem - $paidPay < 0 || $freeGem - $freePay < 0 || $paidCoin < 0)
-            {
-                $result = config('common.RESPONSE_FAILED');
-                return;
-            }
-
-            //残高上限を超えたら購入失敗
-            if ($paidGem > $maxCount || $freeGem > $maxCount || $paidCoin > $maxCount)
-            {
-                $result = config('common.RESPONSE_ERROR');
-                return;
             }
 
             if ($shopCategory === config('common.SHOP_CATEGORY_ITEM'))
@@ -92,12 +80,6 @@ class PaymentController extends Controller
                 $itemId = $shopReward->item_id;
                 $itemAddService->AddItem($manageId, $itemId, $buyAmount);
             }
-
-            $result = $walletsData->update([
-                'gem_paid_amount' => $paidGem - $paidPay,
-                'gem_free_amount' => $freeGem - $freePay,
-                'coin_amount'     => $paidCoin,
-            ]);
 
             $result = config('common.RESPONSE_SUCCESS');
         });
