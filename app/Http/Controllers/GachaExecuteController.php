@@ -11,15 +11,18 @@ use App\Models\CharacterInstance;
 use App\Models\CharacterData;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
+
 use App\Services\ItemAddService;
 use App\Services\GachaCalcService;
 use App\Services\PaymentService;
+use App\Services\GachaResultService;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class GachaExecuteController extends Controller
 {
-    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService)
+    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService, GachaResultService $gachaResultService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
@@ -68,7 +71,7 @@ class GachaExecuteController extends Controller
         //支払いサービス
         $paymentData = $paymentService->PaymentGem($walletData, $defaultCost, $gachaCount);
 
-        DB::transaction(function() use (&$result, $manageId, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService, $paymentData)
+        DB::transaction(function() use (&$result, $manageId, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $walletData, $itemAddService, $paymentData, $gachaResultService)
         {
             $paidGem = $paymentData['paidGem'];
             $freeGem = $paymentData['freeGem'];
@@ -88,63 +91,8 @@ class GachaExecuteController extends Controller
                 'gem_free_amount' => $freeGem - $freePay,
             ]);
 
-            foreach($getCharacterId as $data)
-            {
-                //排出されたキャラが所持済みかどうか確認
-                $exist = CharacterInstance::where('manage_id',$manageId)->where('character_id',$data['character_id'])->first();
-                if($exist == null)
-                {
-                    //未所持なら取得したキャラの所持レコードを作成
-                    CharacterInstance::create([
-                        'manage_id' => $manageId,
-                        'character_id' => $data['character_id'],
-                    ]);
-                    //新規所持キャラとして配列に追加
-                    $newCharacterId[] =
-                    [
-                        'character_id' => $data['character_id'],
-                    ];
-                }
-                else
-                {
-                    //排出したキャラのレアリティを取得
-                    $gachaRarityData = CharacterData::where('id', $data['character_id'])->first();
-                    $rarityId = ItemData::where('rarity_id', $gachaRarityData->rarity_id)->first();
-
-                    $itemId = $rarityId->id;
-                    $amountValue = 1;
-
-                    //アイテム追加サービス
-                    $itemAddService->AddItem($manageId, $itemId, $amountValue);
-
-                    //ガチャ報酬単一表示用レスポンス
-                    $singleExchangeItem[] =
-                    [
-                        'item_id' => $itemId,
-                        'amount'  => $amountValue,
-                    ];
-
-                    //ガチャ実行時、配列にアイテム変換されたitem_idが存在しなければ変数を初期化
-                    if (!isset($exchangeItem[$itemId]))
-                    {
-                        $exchangeItem[$itemId] =
-                        [
-                            'item_id' => $itemId,
-                            'amount' => 0,
-                        ];
-                    }
-
-                    //ガチャ報酬集計表示用レスポンス。変換したitem_id内のamountに合計値を設定
-                    $exchangeItem[$itemId]['amount'] += $amountValue;
-                }
-
-                //回した分ガチャ履歴作成
-                GachaLog::create([
-                    'manage_id' => $manageId,
-                    'gacha_id' => $gachaId->gacha_id,
-                    'character_id' => $data['character_id'],
-                ]);
-            }
+            //ガチャ結果サービス
+            $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $exchangeItem, $singleExchangeItem, $itemAddService);
 
             $result = config('common.RESPONSE_SUCCESS');
         });
