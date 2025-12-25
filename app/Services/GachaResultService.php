@@ -33,10 +33,11 @@ class GachaResultService
             {
                 //排出したキャラのレアリティを取得
                 $gachaRarityData = CharacterData::where('id', $data['character_id'])->first();
-                $rarityId = ItemData::where('rarity_id', $gachaRarityData->rarity_id)->first();
+                $itemData = ItemData::where('rarity_id', $gachaRarityData->rarity_id)->first();
 
-                $itemId = $rarityId->id;
-                $amountValue = 1;
+                //アイテムレアリティに応じたガチャ報酬量を取得
+                $itemId = $itemData->id;
+                $amountValue = $itemData->value;
 
                 //アイテム追加サービス
                 $itemAddService->AddItem($manageId, $itemId, $amountValue);
