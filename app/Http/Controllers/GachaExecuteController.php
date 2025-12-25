@@ -30,15 +30,15 @@ class GachaExecuteController extends Controller
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
 
-        //ガチャ回数
-        $gachaCount = $request->gacha_count;
-
-        //ガチャデータの期間取得
+        //ガチャデータの取得
         $gachaId = GachaData::where('gacha_id', $request->gacha_id)->first();
 
         //ガチャデータの価格取得
         $gachaPeriodData = GachaPeriod::where('id', $request->gacha_id)->first();
         $defaultCost = $gachaPeriodData->single_cost;
+
+        //ガチャ回数
+        $gachaCount = $request->gacha_count;
 
         //抽選用データ
         $getCharacterId = [];
