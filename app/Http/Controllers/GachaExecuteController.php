@@ -46,12 +46,12 @@ class GachaExecuteController extends Controller
         //排出用データ
         $newCharacterId = [];
         $singleExchangeItem = [];
-        $exchangeItem = [];
+        $totalExchangeItem = [];
 
         //ガチャ抽選計算サービス
         $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $request->gacha_id);
 
-        DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
+        DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
         {
             //支払いサービス
             if (!$paymentService->PaymentGem($manageId, $defaultCost, $gachaCount))
@@ -61,7 +61,7 @@ class GachaExecuteController extends Controller
             }
 
             //ガチャ結果サービス
-            $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $exchangeItem, $singleExchangeItem, $itemAddService);
+            $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService);
 
             $result = config('common.RESPONSE_SUCCESS');
         });
@@ -84,7 +84,7 @@ class GachaExecuteController extends Controller
                     'gacha_results' => $getCharacterId,
                     'new_characters' => $newCharacterId,
                     'single_exchange_items' => $singleExchangeItem,
-                    'total_exchange_items' => array_values($exchangeItem), //連想配列を数字添え字の形に変換して返す
+                    'total_exchange_items' => array_values($totalExchangeItem), //連想配列を数字添え字の形に変換して返す
                     'gacha_logs' => GachaLog::where('manage_id', $manageId)->get(),
                 ];
                 break;

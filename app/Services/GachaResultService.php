@@ -10,7 +10,7 @@ use App\Services\ItemAddService;
 
 class GachaResultService
 {
-    public function GachaResult($manageId, $gachaId, $getCharacterId, &$newCharacterId, &$exchangeItem, &$singleExchangeItem, ItemAddService $itemAddService)
+    public function GachaResult($manageId, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, ItemAddService $itemAddService)
     {
         foreach($getCharacterId as $data)
         {
@@ -50,9 +50,9 @@ class GachaResultService
                 ];
 
                 //ガチャ実行時、配列にアイテム変換されたitem_idが存在しなければ変数を初期化
-                if (!isset($exchangeItem[$itemId]))
+                if (!isset($totalExchangeItem[$itemId]))
                 {
-                    $exchangeItem[$itemId] =
+                    $totalExchangeItem[$itemId] =
                     [
                         'item_id' => $itemId,
                         'amount' => 0,
@@ -60,7 +60,7 @@ class GachaResultService
                 }
 
                 //ガチャ報酬集計表示用レスポンス。変換したitem_id内のamountに合計値を設定
-                $exchangeItem[$itemId]['amount'] += $amountValue;
+                $totalExchangeItem[$itemId]['amount'] += $amountValue;
             }
 
             //回した分ガチャ履歴作成
