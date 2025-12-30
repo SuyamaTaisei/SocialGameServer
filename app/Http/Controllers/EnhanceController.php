@@ -28,6 +28,15 @@ class EnhanceController extends Controller
 
         DB::transaction(function() use (&$result, $manageId, $characterInstance, $items)
         {
+            //上限値を超えた場合は何もしない
+            if ($characterInstance->level >= config('common.MAX_CHARACTER_LEVEL'))
+            {
+                $result = config('common.RESPONSE_FAILED');
+                return;
+            }
+
+            $itemTotalAmount = 0;
+
             foreach($items as $data)
             {
                 //指定された同じアイテムIDに対応する数量のペア
@@ -50,10 +59,6 @@ class EnhanceController extends Controller
                     continue; //アイテムデータに無ければスキップ
                 }
 
-                //指定キャラのレベル、指定アイテムの数量レコード更新
-                $characterInstance->update([
-                    'level' => $characterInstance->level + $itemData->value * $itemAmount,
-                ]);
                 $itemInstance->update([
                     'amount' => $itemInstance->amount - $itemAmount,
                 ]);
@@ -63,6 +68,23 @@ class EnhanceController extends Controller
                 {
                     $itemInstance->delete();
                 }
+
+                $currentLevel = $characterInstance->level;
+                $itemTotalAmount = $itemData->value * $itemAmount;
+
+                //上限値に応じた追加レベル数の取得
+                $addValue = min($itemTotalAmount, config('common.MAX_CHARACTER_LEVEL') - $currentLevel);
+
+                //amountValueが0、上限値 - 最高レベル数の場合は何もしない
+                if ($addValue <= 0)
+                {
+                    return;
+                }
+
+                //指定キャラのレベル、指定アイテムの数量レコード更新
+                $characterInstance->update([
+                    'level' => $characterInstance->level + $addValue,
+                ]);
             }
 
             $result = config('common.RESPONSE_SUCCESS');
@@ -70,6 +92,9 @@ class EnhanceController extends Controller
 
         switch($result)
         {
+            case config('common.RESPONSE_FAILED');
+                $response['result'] = config('common.RESPONSE_ERROR');
+                break;
             case config('common.RESPONSE_SUCCESS'):
                 $response =
                 [
