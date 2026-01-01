@@ -99,6 +99,7 @@ class EnhanceController extends Controller
                 $response =
                 [
                     'users' => User::where('manage_id', $manageId)->first(),
+                    'wallets' => Wallet::where('manage_id',$manageId)->first(),
                     'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
                     'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
                 ];
