@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Wallet;
 use App\Models\CharacterInstance;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
