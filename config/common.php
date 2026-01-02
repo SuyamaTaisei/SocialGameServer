@@ -47,6 +47,7 @@ return
     'GACHA_RARITY_3000' => 3000,
     'GACHA_RARITY_4000' => 4000,
 
-    //アイテム関連
+    //インスタンス関連
     'MAX_ITEM_INSTANCE' => 99,
+    'MAX_CHARACTER_LEVEL' => 100,
 ];
