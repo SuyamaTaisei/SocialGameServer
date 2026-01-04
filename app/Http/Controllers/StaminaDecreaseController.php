@@ -31,18 +31,18 @@ class StaminaDecreaseController extends Controller
         DB::transaction(function() use (&$result, $userData, $walletData)
         {
             //スタミナが対戦時必要量を下回ったら何もしない
-            if ($userData->last_stamina < 5)
+            if ($userData->last_stamina < config('common.STAMINA_DECREASE_VALUE'))
             {
                 $result = config('common.RESPONSE_FAILED');
                 return;
             }
 
             //コイン差分計算
-            $addValue = min(50, 999999 - $walletData->coin_amount);
+            $addValue = min(50, config('common.MAX_CURRENCY_VALUE') - $walletData->coin_amount);
 
             //スタミナ消費
             $userData->update([
-                'last_stamina' => $userData->last_stamina - 5,
+                'last_stamina' => $userData->last_stamina - config('common.STAMINA_DECREASE_VALUE'),
                 'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
             ]);
             $walletData->update([
