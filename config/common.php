@@ -7,8 +7,10 @@ return
     'DEFAULT_STAMINA' => 100,
 
     //スタミナ関連
-    'STAMINA_RECOVERY_SECOND' => 18, //スタミナが回復するのにかかる秒数
-    'STAMINA_RECOVERY_VALUE' => 1, //1回のスタミナ回復量
+    'STAMINA_MAX_VALUE' => 199, //スタミナ理論値
+    'STAMINA_INCREASE_VALUE' => 1, //スタミナ自然回復量
+    'STAMINA_INCREASE_MAX' => 100, //1回のスタミナ回復量
+    'STAMINA_DECREASE_VALUE' => 5, //1回のスタミナ消費量
 
     //ウォレット関連
     'COIN_AMOUNT' => 100,
