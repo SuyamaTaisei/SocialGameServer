@@ -25,7 +25,7 @@ class StaminaAutoIncreaseController extends Controller
         }
 
         //スタミナが理論値になったら自然回復を停止
-        if ($userData->last_stamina >= 199)
+        if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
         {
             return;
         }
@@ -34,7 +34,7 @@ class StaminaAutoIncreaseController extends Controller
         {
             //スタミナ自然回復
             $userData->update([
-                'last_stamina' => $userData->last_stamina + 1,
+                'last_stamina' => $userData->last_stamina + config('common.STAMINA_INCREASE_AUTO_VALUE'),
                 'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
             ]);
 

@@ -33,7 +33,7 @@ class StaminaIncreaseController extends Controller
         DB::transaction(function() use (&$result, $userData, $walletData, $paymentService)
         {
             //スタミナが理論値を超えたら回復できない
-            if ($userData->last_stamina >= 199)
+            if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
             {
                 $result = config('common.RESPONSE_FAILED');
                 return;
@@ -47,7 +47,7 @@ class StaminaIncreaseController extends Controller
             }
 
             //スタミナ差分計算
-            $addValue = min(100, 199 - $userData->last_stamina);
+            $addValue = min(config('common.STAMINA_INCREASE_VALUE'), config('common.STAMINA_MAX_VALUE') - $userData->last_stamina);
 
             //スタミナ回復
             $userData->update([
