@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Wallet;
+
+use App\Services\StaminaDiffService;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +13,7 @@ use Illuminate\Http\Request;
 
 class StaminaAutoIncreaseController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, StaminaDiffService $staminaDiffService)
     {
         $result = config('common.RESPONSE_FAILED');
 
@@ -30,12 +33,21 @@ class StaminaAutoIncreaseController extends Controller
             return;
         }
 
-        DB::transaction(function() use (&$result, $userData)
+        //現在ログイン時刻
+        $currentLogin = Carbon::now();
+        //最終ログイン時刻
+        $lastLogin = Carbon::parse($userData->last_login);
+
+        //スタミナ差分計算サービス
+        $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastLogin, $currentLogin);
+
+        //最終ログイン時刻を更新しているので、専用カラムで置き換え
+        DB::transaction(function() use (&$result, $userData, $staminaDiffData, $currentLogin)
         {
-            //スタミナ自然回復
             $userData->update([
-                'last_stamina' => $userData->last_stamina + config('common.STAMINA_INCREASE_AUTO_VALUE'),
-                'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
+                'last_login' => $currentLogin->format('Y-m-d H:i:s'),
+                'last_stamina' => $staminaDiffData,
+                'stamina_updated' => $currentLogin->format('Y-m-d H:i:s'),
             ]);
 
             $result = config('common.RESPONSE_SUCCESS');
@@ -50,6 +62,7 @@ class StaminaAutoIncreaseController extends Controller
                 $response =
                 [
                     'users' => User::where('manage_id', $userData->manage_id)->first(),
+                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
                 ];
                 break;
         }
