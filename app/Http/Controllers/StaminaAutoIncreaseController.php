@@ -3,28 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\GachaLog;
+use App\Models\Wallet;
 
 use App\Services\StaminaDiffService;
 
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
-class LoginController extends Controller
+class StaminaAutoIncreaseController extends Controller
 {
     public function __invoke(Request $request, StaminaDiffService $staminaDiffService)
     {
         $result = config('common.RESPONSE_FAILED');
 
-        //ユーザー情報取得
-        $userData = User::where('id', $request->id)->first();
+        //ユーザー情報
+        $userData = User::where('id',$request->id)->first();
 
         //ユーザー情報がなければエラーを返して何もしない
         if (!$userData)
         {
             $result = config('common.RESPONSE_FAILED');
+            return;
+        }
+
+        //スタミナが理論値になったら自然回復を停止
+        if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
+        {
             return;
         }
 
@@ -36,6 +41,7 @@ class LoginController extends Controller
         //スタミナ差分計算サービス
         $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastLogin, $currentLogin);
 
+        //最終ログイン時刻を更新しているので、専用カラムで置き換え
         DB::transaction(function() use (&$result, $userData, $staminaDiffData, $currentLogin)
         {
             $userData->update([
@@ -47,23 +53,19 @@ class LoginController extends Controller
             $result = config('common.RESPONSE_SUCCESS');
         });
 
-        switch ($result)
+        switch($result)
         {
-            //エラー時
             case config('common.RESPONSE_FAILED'):
                 $response['result'] = config('common.RESPONSE_ERROR');
                 break;
-            //ログイン時に必要な情報を取得
             case config('common.RESPONSE_SUCCESS'):
-                $response = 
+                $response =
                 [
                     'users' => User::where('manage_id', $userData->manage_id)->first(),
-                    'gacha_logs' => GachaLog::where('manage_id', $userData->manage_id)->get(),
+                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
                 ];
                 break;
         }
-
-        Auth::login($userData);
 
         return response()->json($response);
     }
