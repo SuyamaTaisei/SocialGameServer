@@ -13,7 +13,7 @@ use App\Services\CharacterEnhanceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-class EnhanceController extends Controller
+class CharacterEnhanceController extends Controller
 {
     public function __invoke(Request $request, CharacterEnhanceService $characterEnhanceService)
     {
