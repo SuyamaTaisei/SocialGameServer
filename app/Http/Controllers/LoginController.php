@@ -30,11 +30,11 @@ class LoginController extends Controller
 
         //現在ログイン時刻
         $currentLogin = Carbon::now();
-        //最終ログイン時刻
-        $lastLogin = Carbon::parse($userData->last_login);
+        //最終スタミナ更新時刻
+        $lastStaminaUpdated = Carbon::parse($userData->stamina_updated);
 
         //スタミナ差分計算サービス
-        $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastLogin, $currentLogin);
+        $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastStaminaUpdated, $currentLogin);
 
         DB::transaction(function() use (&$result, $userData, $staminaDiffData, $currentLogin)
         {

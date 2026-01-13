@@ -15,7 +15,7 @@ use App\Services\PaymentService;
 
 use Illuminate\Support\Facades\DB;
 
-class PaymentController extends Controller
+class ShopController extends Controller
 {
     public function __invoke(Request $request, ItemAddService $itemAddService, PaymentService $paymentService)
     {

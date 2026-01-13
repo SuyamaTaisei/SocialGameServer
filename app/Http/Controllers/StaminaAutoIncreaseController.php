@@ -35,17 +35,15 @@ class StaminaAutoIncreaseController extends Controller
 
         //現在ログイン時刻
         $currentLogin = Carbon::now();
-        //最終ログイン時刻
-        $lastLogin = Carbon::parse($userData->last_login);
+        //最終スタミナ更新時刻
+        $lastStaminaUpdated = Carbon::parse($userData->stamina_updated);
 
         //スタミナ差分計算サービス
-        $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastLogin, $currentLogin);
+        $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastStaminaUpdated, $currentLogin);
 
-        //最終ログイン時刻を更新しているので、専用カラムで置き換え
         DB::transaction(function() use (&$result, $userData, $staminaDiffData, $currentLogin)
         {
             $userData->update([
-                'last_login' => $currentLogin->format('Y-m-d H:i:s'),
                 'last_stamina' => $staminaDiffData,
                 'stamina_updated' => $currentLogin->format('Y-m-d H:i:s'),
             ]);
