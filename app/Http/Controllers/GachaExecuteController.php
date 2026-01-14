@@ -51,20 +51,26 @@ class GachaExecuteController extends Controller
         //ガチャ抽選計算サービス
         $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $request->gacha_id);
 
-        DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
+        try
         {
-            //支払いサービス
-            if (!$paymentService->PaymentGem($manageId, $defaultCost, $gachaCount))
+            DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
             {
-                $result = config('common.RESPONSE_FAILED');
-                return;
-            }
+                //支払いサービス
+                if (!$paymentService->PaymentGem($manageId, $defaultCost, $gachaCount))
+                {
+                    throw new \RuntimeException('NOT_PAYMENT');
+                }
 
-            //ガチャ結果サービス
-            $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService);
+                //ガチャ結果サービス
+                $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService);
 
-            $result = config('common.RESPONSE_SUCCESS');
-        });
+                $result = config('common.RESPONSE_SUCCESS');
+            });
+        }
+        catch (\Throwable $e)
+        {
+            $result = config('common.RESPONSE_FAILED');
+        }
 
         switch($result)
         {
