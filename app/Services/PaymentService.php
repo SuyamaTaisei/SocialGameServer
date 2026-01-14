@@ -10,7 +10,7 @@ class PaymentService
     //現金での支払い処理
     public function PaymentMoney($manageId, int $paidCurrency, int $freeCurrency): bool
     {
-        $walletData = Wallet::where('manage_id',$manageId)->first();
+        $walletData = Wallet::where('manage_id',$manageId)->lockForUpdate()->first();
         $maxCount = config('common.MAX_CURRENCY_VALUE');
 
         $paidGem = $walletData->gem_paid_amount + $paidCurrency;
@@ -32,7 +32,7 @@ class PaymentService
     public function PaymentGem($manageId, int $cost, int $count): bool
     {
         //ウォレット情報
-        $walletData = Wallet::where('manage_id',$manageId)->first();
+        $walletData = Wallet::where('manage_id',$manageId)->lockForUpdate()->first();
 
         $paidGem = $walletData->gem_paid_amount;
         $freeGem = $walletData->gem_free_amount;
@@ -58,7 +58,7 @@ class PaymentService
     //コインでの支払い処理
     public function PaymentCoin($manageId, int $coinCurrency, int $count): bool
     {
-        $walletData = Wallet::where('manage_id',$manageId)->first();
+        $walletData = Wallet::where('manage_id',$manageId)->lockForUpdate()->first();
 
         $paidCoin = $walletData->coin_amount;
 
