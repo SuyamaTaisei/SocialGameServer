@@ -33,7 +33,7 @@ class CharacterEnhanceService
                     continue; //数量が0だった場合はスキップ
                 }
 
-                $itemInstance = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->first();
+                $itemInstance = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->lockForUpdate()->first();
                 if (!$itemInstance)
                 {
                     continue; //指定された所持アイテムが無ければスキップ

@@ -15,7 +15,7 @@ class GachaResultService
         foreach($getCharacterId as $data)
         {
             //排出されたキャラが所持済みかどうか確認
-            $exist = CharacterInstance::where('manage_id',$manageId)->where('character_id',$data['character_id'])->first();
+            $exist = CharacterInstance::where('manage_id',$manageId)->where('character_id',$data['character_id'])->lockForUpdate()->first();
             if($exist == null)
             {
                 //未所持なら取得したキャラの所持レコードを作成

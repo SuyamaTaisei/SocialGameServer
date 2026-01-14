@@ -46,7 +46,7 @@ class RegisterController extends Controller
             ]);
 
             //ユーザー情報取得
-            $userData = User::where('id', $Id)->first();
+            $userData = User::where('id', $Id)->lockForUpdate()->first();
 
             //ウォレット登録
             $walletData = Wallet::create([

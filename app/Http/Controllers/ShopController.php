@@ -76,7 +76,7 @@ class ShopController extends Controller
             if ($shopCategory === config('common.SHOP_CATEGORY_ITEM'))
             {
                 //商品IDに応じてitem_idと貰える数を指定
-                $shopReward = ShopReward::where('product_id', $productId)->first();
+                $shopReward = ShopReward::where('product_id', $productId)->lockForUpdate()->first();
                 $itemId = $shopReward->item_id;
                 $itemAddService->AddItem($manageId, $itemId, $buyAmount);
             }
