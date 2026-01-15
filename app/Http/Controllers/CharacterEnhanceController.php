@@ -17,8 +17,6 @@ class CharacterEnhanceController extends Controller
 {
     public function __invoke(Request $request, CharacterEnhanceService $characterEnhanceService)
     {
-        $result = config('common.RESPONSE_FAILED');
-
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
@@ -29,24 +27,23 @@ class CharacterEnhanceController extends Controller
         //所有済みアイテムID かつ 数量のペア取得
         $items = $request->input('items', []);
 
-        //キャラクター強化サービス
-        $characterEnhanceService->CharacterEnhance($result, $manageId, $characterInstance, $items);
-
-        switch($result)
+        //上限値を超えた場合は何もしない
+        if ($characterInstance->level >= config('common.MAX_CHARACTER_LEVEL'))
         {
-            case config('common.RESPONSE_FAILED');
-                $response['result'] = config('common.RESPONSE_ERROR');
-                break;
-            case config('common.RESPONSE_SUCCESS'):
-                $response =
-                [
-                    'users' => User::where('manage_id', $manageId)->first(),
-                    'wallets' => Wallet::where('manage_id',$manageId)->first(),
-                    'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
-                    'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
-                ];
-                break;
+            return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }
+
+        //キャラクター強化サービス
+        $characterEnhanceService->CharacterEnhance($manageId, $characterInstance, $items);
+
+        //レスポンスデータ
+        $response =
+        [
+            'users' => User::where('manage_id', $manageId)->first(),
+            'wallets' => Wallet::where('manage_id',$manageId)->first(),
+            'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
+            'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+        ];
 
         return response()->json($response);
     }

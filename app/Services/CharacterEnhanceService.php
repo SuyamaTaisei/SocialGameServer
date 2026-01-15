@@ -10,17 +10,10 @@ use Illuminate\Support\Facades\DB;
 //キャラクター強化サービス
 class CharacterEnhanceService
 {
-    public function CharacterEnhance(&$result, $manageId, $characterInstance, $items)
+    public function CharacterEnhance($manageId, $characterInstance, $items)
     {
-        DB::transaction(function() use (&$result, $manageId, $characterInstance, $items)
+        DB::transaction(function() use ($manageId, $characterInstance, $items)
         {
-            //上限値を超えた場合は何もしない
-            if ($characterInstance->level >= config('common.MAX_CHARACTER_LEVEL'))
-            {
-                $result = config('common.RESPONSE_FAILED');
-                return;
-            }
-
             $itemTotalAmount = 0;
 
             foreach($items as $data)
@@ -61,19 +54,11 @@ class CharacterEnhanceService
                 //上限値に応じた追加レベル数の取得
                 $addValue = min($itemTotalAmount, config('common.MAX_CHARACTER_LEVEL') - $currentLevel);
 
-                //amountValueが0、上限値 - 最高レベル数の場合は何もしない
-                if ($addValue <= 0)
-                {
-                    return;
-                }
-
                 //指定キャラのレベル、指定アイテムの数量レコード更新
                 $characterInstance->update([
                     'level' => $characterInstance->level + $addValue,
                 ]);
             }
-
-            $result = config('common.RESPONSE_SUCCESS');
         });
     }
 }
