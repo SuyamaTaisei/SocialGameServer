@@ -15,35 +15,29 @@ class StaminaIncreaseController extends Controller
 {
     public function __invoke(Request $request, PaymentService $paymentService)
     {
-        $result = config('common.RESPONSE_FAILED');
-
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
 
         //ウォレット情報
         $walletData = Wallet::where('manage_id', $userData->manage_id)->first();
 
-        //ユーザー情報がなければエラーを返して何もしない
         if (!$userData || !$walletData)
         {
-            $result = config('common.RESPONSE_FAILED');
-            return;
+            return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }
 
-        DB::transaction(function() use (&$result, $userData, $walletData, $paymentService)
+        //スタミナが最大値を超えたら回復できない
+        if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
         {
-            //スタミナが理論値を超えたら回復できない
-            if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
-            {
-                $result = config('common.RESPONSE_FAILED');
-                return;
-            }
+            return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
+        }
 
+        DB::transaction(function() use ($userData, $walletData, $paymentService)
+        {
             //支払いサービス
             if (!$paymentService->PaymentGem($userData->manage_id, 50, 1))
             {
-                $result = config('common.RESPONSE_ERROR');
-                return;
+                return response()->json(['errcode' => config('common.ERRCODE_NOT_PAYMENT')]);
             }
 
             //スタミナ差分計算
@@ -54,29 +48,13 @@ class StaminaIncreaseController extends Controller
                 'last_stamina' => $userData->last_stamina + $addValue,
                 'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
             ]);
-
-            $result = config('common.RESPONSE_SUCCESS');
         });
 
-        switch($result)
-        {
-            case config('common.RESPONSE_FAILED'):
-                $response['result'] = config('common.RESPONSE_ERROR');
-                break;
-            case config('common.RESPONSE_ERROR'):
-                $response =
-                [
-                    'errcode' => config('common.ERRCODE_NOT_PAYMENT'),
-                ];
-                break;
-            case config('common.RESPONSE_SUCCESS'):
-                $response =
-                [
-                    'users' => User::where('manage_id', $userData->manage_id)->first(),
-                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
-                ];
-                break;
-        }
+        $response =
+        [
+            'users' => User::where('manage_id', $userData->manage_id)->first(),
+            'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+        ];
 
         return response()->json($response);
     }

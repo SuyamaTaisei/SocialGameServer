@@ -15,22 +15,18 @@ class StaminaAutoIncreaseController extends Controller
 {
     public function __invoke(Request $request, StaminaDiffService $staminaDiffService)
     {
-        $result = config('common.RESPONSE_FAILED');
-
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
 
-        //ユーザー情報がなければエラーを返して何もしない
         if (!$userData)
         {
-            $result = config('common.RESPONSE_FAILED');
-            return;
+            return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }
 
         //スタミナが理論値になったら自然回復を停止
         if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
         {
-            return;
+            return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }
 
         //現在ログイン時刻
@@ -41,29 +37,19 @@ class StaminaAutoIncreaseController extends Controller
         //スタミナ差分計算サービス
         $staminaDiffData = $staminaDiffService->StaminaDiff($userData, $lastStaminaUpdated, $currentLogin);
 
-        DB::transaction(function() use (&$result, $userData, $staminaDiffData, $currentLogin)
+        DB::transaction(function() use ($userData, $staminaDiffData, $currentLogin)
         {
             $userData->update([
                 'last_stamina' => $staminaDiffData,
                 'stamina_updated' => $currentLogin->format('Y-m-d H:i:s'),
             ]);
-
-            $result = config('common.RESPONSE_SUCCESS');
         });
 
-        switch($result)
-        {
-            case config('common.RESPONSE_FAILED'):
-                $response['result'] = config('common.RESPONSE_ERROR');
-                break;
-            case config('common.RESPONSE_SUCCESS'):
-                $response =
-                [
-                    'users' => User::where('manage_id', $userData->manage_id)->first(),
-                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
-                ];
-                break;
-        }
+        $response =
+        [
+            'users' => User::where('manage_id', $userData->manage_id)->first(),
+            'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+        ];
 
         return response()->json($response);
     }
