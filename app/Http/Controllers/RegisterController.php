@@ -2,24 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
+
 use App\Models\User;
 use App\Models\Wallet;
 
 use App\Services\RegisterValidationService;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
     public function __invoke(Request $request, RegisterValidationService $RegisterValidationService)
     {
-        $result = config('common.RESPONSE_FAILED');
-        $response['result'] = config('common.RESPONSE_SUCCESS');
-
         //ユーザーデータ
         $userData = 0;
 
@@ -33,7 +30,7 @@ class RegisterController extends Controller
         //登録バリデーションサービス
         $userValidated = $RegisterValidationService->RegisterValidation($request);
 
-        DB::transaction(function() use (&$result, $Id, &$userData, $userValidated)
+        DB::transaction(function() use ($Id, &$userData, $userValidated)
         {
             //アカウント登録
             $accountData = User::create([
@@ -55,23 +52,13 @@ class RegisterController extends Controller
                 'gem_free_amount' => config('common.GEM_FREE_AMOUNT'),
                 'gem_paid_amount' => config('common.GEM_PAID_AMOUNT'),
             ]);
-
-            $result = config('common.RESPONSE_SUCCESS');
         });
 
-        switch ($result)
-        {
-            case config('common.RESPONSE_FAILED'):
-                $response['result'] = config('common.RESPONSE_ERROR');
-                break;
-            case config('common.RESPONSE_SUCCESS'):
-                $response =
-                [
-                    'users' => User::where('manage_id', $userData->manage_id)->first(),
-                    'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
-                ];
-                break;
-        }
+        $response =
+        [
+            'users' => User::where('manage_id', $userData->manage_id)->first(),
+            'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+        ];
 
         return response()->json($response);
     }
