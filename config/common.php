@@ -8,6 +8,7 @@ return
 
     //スタミナ関連
     'STAMINA_MAX_VALUE' => 199, //スタミナ理論値
+    'STAMINA_MOST_VALUE' => 100, //スタミナ最大値
     'STAMINA_INCREASE_AUTO_VALUE' => 1, //スタミナ自然回復量
     'STAMINA_INCREASE_VALUE' => 100, //1回のスタミナ回復量
     'STAMINA_DECREASE_VALUE' => 5, //1回のスタミナ消費量
