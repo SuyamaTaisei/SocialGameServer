@@ -18,8 +18,6 @@ class ShopController extends Controller
 {
     public function __invoke(Request $request, ItemAddService $itemAddService, PaymentService $paymentService, ShopCategoryService $shopCategoryService)
     {
-        $result = config('common.RESPONSE_FAILED');
-
         //ユーザー情報取得
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
@@ -34,6 +32,7 @@ class ShopController extends Controller
         //ショップカテゴリサービス
         $result = $shopCategoryService->ShopCategory($manageId, $productId, $buyAmount, $shopData, $itemAddService, $paymentService);
 
+        //レスポンスデータ
         switch($result)
         {
             case config('common.RESPONSE_ERROR'):

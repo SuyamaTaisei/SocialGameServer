@@ -45,6 +45,7 @@ class StaminaAutoIncreaseController extends Controller
             ]);
         });
 
+        //レスポンスデータ
         $response =
         [
             'users' => User::where('manage_id', $userData->manage_id)->first(),
