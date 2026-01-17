@@ -13,7 +13,6 @@ class ShopCategory extends Model
 
     protected $primaryKey = 'category';
 
-    //更新しないリスト
     protected $guarded =
     [
         'created_at',

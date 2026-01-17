@@ -10,6 +10,7 @@ use App\Services\ItemAddService;
 
 use Illuminate\Support\Facades\DB;
 
+//ガチャ結果用サービス
 class GachaResultService
 {
     public function GachaResult($manageId, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, ItemAddService $itemAddService)

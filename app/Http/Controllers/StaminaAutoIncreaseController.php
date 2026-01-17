@@ -23,7 +23,7 @@ class StaminaAutoIncreaseController extends Controller
             return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }
 
-        //スタミナが理論値になったら自然回復を停止
+        //スタミナが上限値になったら自然回復を停止
         if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
         {
             return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);

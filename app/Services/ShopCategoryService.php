@@ -6,6 +6,7 @@ use App\Models\ShopReward;
 
 use Illuminate\Support\Facades\DB;
 
+//ショップカテゴリ用サービス
 class ShopCategoryService
 {
     public function ShopCategory($manageId, $productId, $buyAmount, $shopData, $itemAddService, $paymentService)
