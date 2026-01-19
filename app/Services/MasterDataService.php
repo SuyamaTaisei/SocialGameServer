@@ -16,6 +16,8 @@ use App\Models\ItemRarity;
 use App\Models\GachaPeriod;
 use App\Models\GachaData;
 
+use App\Models\PresentCategory;
+
 //マスターデータ用サービス
 class MasterDataService
 {
@@ -42,6 +44,8 @@ class MasterDataService
 
         $master_data_list['gacha_periods'] = GachaPeriod::all();
         $master_data_list['gacha_data'] = GachaData::all();
+
+        $master_data_list['present_categories'] = PresentCategory::all();
 
         //マスタデータをJSON形式で作成
         $json = json_encode($master_data_list);
