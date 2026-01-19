@@ -24,8 +24,6 @@ class GachaExecuteController extends Controller
 {
     public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService, GachaResultService $gachaResultService)
     {
-        $result = config('common.RESPONSE_FAILED');
-
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
@@ -48,47 +46,31 @@ class GachaExecuteController extends Controller
         $singleExchangeItem = [];
         $totalExchangeItem = [];
 
+        //支払いサービス
+        if (!$paymentService->PaymentGem($manageId, $defaultCost, $gachaCount))
+        {
+            return response()->json(['errcode' => config('common.ERRCODE_NOT_PAYMENT')]);
+        }
+
         //ガチャ抽選計算サービス
         $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $request->gacha_id);
 
-        DB::transaction(function() use (&$result, $manageId, $defaultCost, $gachaCount, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $paymentService, $gachaResultService, $itemAddService)
-        {
-            //支払いサービス
-            if (!$paymentService->PaymentGem($manageId, $defaultCost, $gachaCount))
-            {
-                $result = config('common.RESPONSE_FAILED');
-                return;
-            }
+        //ガチャ結果サービス
+        $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService);
 
-            //ガチャ結果サービス
-            $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService);
-
-            $result = config('common.RESPONSE_SUCCESS');
-        });
-
-        switch($result)
-        {
-            case config('common.RESPONSE_FAILED'):
-                $response =
-                [
-                    'errcode' => config('common.ERRCODE_NOT_PAYMENT'),
-                ];
-                break;
-            case config('common.RESPONSE_SUCCESS'):
-                $response =
-                [
-                    'users' => User::where('manage_id', $manageId)->first(),
-                    'wallets' => Wallet::where('manage_id', $manageId)->first(),
-                    'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
-                    'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
-                    'gacha_results' => $getCharacterId,
-                    'new_characters' => $newCharacterId,
-                    'single_exchange_items' => $singleExchangeItem,
-                    'total_exchange_items' => array_values($totalExchangeItem), //連想配列を数字添え字の形に変換して返す
-                    'gacha_logs' => GachaLog::where('manage_id', $manageId)->get(),
-                ];
-                break;
-        }
+        //レスポンスデータ
+        $response =
+        [
+            'users' => User::where('manage_id', $manageId)->first(),
+            'wallets' => Wallet::where('manage_id', $manageId)->first(),
+            'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
+            'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+            'gacha_results' => $getCharacterId,
+            'new_characters' => $newCharacterId,
+            'single_exchange_items' => $singleExchangeItem,
+            'total_exchange_items' => array_values($totalExchangeItem),
+            'gacha_logs' => GachaLog::where('manage_id', $manageId)->get(),
+        ];
 
         return response()->json($response);
     }

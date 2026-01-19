@@ -16,6 +16,7 @@ use App\Models\ItemRarity;
 use App\Models\GachaPeriod;
 use App\Models\GachaData;
 
+//マスターデータ用サービス
 class MasterDataService
 {
     //マスタデータ作成処理

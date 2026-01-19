@@ -10,7 +10,7 @@ class ItemAddService
     public function AddItem(int $manageId, int $itemId, int $amountValue)
     {
         //item_idを取得
-        $existItem = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->first();
+        $existItem = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->lockForUpdate()->first();
 
         //現在のアイテム数を取得、何もアイテムが無ければ0を取得
         $currentAmount = $existItem?->amount ?? 0;

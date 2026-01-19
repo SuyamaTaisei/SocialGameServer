@@ -17,7 +17,6 @@ class ShopReward extends Model
         'created_at',
     ];
 
-    //書き込み可能なホワイトリスト
     protected $fillable =
     [
         'product_id',
