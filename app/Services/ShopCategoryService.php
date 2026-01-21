@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ItemData;
 use App\Models\ShopReward;
 
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,8 @@ class ShopCategoryService
                 //商品IDに応じてitem_idと貰える数を指定
                 $shopReward = ShopReward::where('product_id', $productId)->lockForUpdate()->first();
                 $itemId = $shopReward->item_id;
-                $itemAddService->AddItem($manageId, $itemId, $buyAmount);
+                $itemData = ItemData::where('id', $itemId)->first();
+                $itemAddService->AddItem($manageId, $itemData->item_category, $itemData->name, $itemId, $buyAmount);
             }
 
             return config('common.RESPONSE_SUCCESS');

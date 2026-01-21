@@ -9,6 +9,7 @@ use App\Models\ShopData;
 use App\Models\Wallet;
 use App\Models\ItemInstance;
 use App\Models\CharacterInstance;
+use App\Models\PresentInstance;
 
 use App\Services\ShopCategoryService;
 use App\Services\ItemAddService;
@@ -54,6 +55,7 @@ class ShopController extends Controller
                     'wallets' => Wallet::where('manage_id',$manageId)->first(),
                     'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
                     'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
+                    'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
                 ];
                 break;
         }

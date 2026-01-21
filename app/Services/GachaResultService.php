@@ -45,7 +45,7 @@ class GachaResultService
                     $amountValue = $itemData->value;
 
                     //アイテム追加サービス
-                    $itemAddService->AddItem($manageId, $itemId, $amountValue);
+                    $itemAddService->AddItem($manageId, $itemData->item_category, $itemData->name, $itemId, $amountValue);
 
                     //ガチャ報酬単一表示用レスポンス
                     $singleExchangeItem[] =
