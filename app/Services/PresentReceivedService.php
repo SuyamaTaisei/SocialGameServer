@@ -3,17 +3,18 @@
 namespace App\Services;
 
 use App\Models\ItemInstance;
-use App\Models\PresentCategory;
+use App\Models\PresentInstance;
 use App\Models\ItemData;
 use App\Models\Wallet;
 
 use Illuminate\Support\Facades\DB;
 
+//プレゼント受け取り用サービス
 class PresentReceivedService
 {
-    public function PresentReceived($manageId, $presents, $itemAddService)
+    public function PresentReceived($manageId, $presents)
     {
-        DB::transaction(function() use ($manageId, $presents, $itemAddService)
+        DB::transaction(function() use ($manageId, $presents)
         {
             $walletData = Wallet::where('manage_id', $manageId)->lockForUpdate()->first();
 
@@ -25,8 +26,8 @@ class PresentReceivedService
 
                 switch($category)
                 {
-                    case 1001: $itemData = ItemData::where('id', $content)->first();
-                               $itemAddService->AddItem($manageId, $itemData->item_category, $itemData->name, $content, $amount);
+                    case 1001: $itemData = ItemData::where('id', $content)->lockForUpdate()->first();
+                               $this->ReceivedItem($manageId, $itemData->item_category, $content, $amount);
                         break;
                     case 2001: $walletData->update(['gem_paid_amount' => $walletData->gem_paid_amount + $content * $amount]);
                         break;
@@ -35,5 +36,40 @@ class PresentReceivedService
                 }
             }
         });
+    }
+
+    //プレゼント(アイテム)受け取り用メソッド
+    public function ReceivedItem(int $manageId, $category, int $itemId, int $amountValue)
+    {
+        //item_idを取得
+        $existItem = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->lockForUpdate()->first();
+
+        //現在のアイテム数を取得、何もアイテムが無ければ0を取得
+        $currentAmount = $existItem?->amount ?? 0;
+
+        //上限値に応じた追加アイテム数の取得
+        $addValue = min($amountValue, config('common.MAX_ITEM_INSTANCE') - $currentAmount);
+
+        //受け取った処理
+        $presentData = PresentInstance::where('manage_id', $manageId)->where('present_category', $category)->where('content', $itemId)->lockForUpdate()->first();
+        $presentData->update(['received' => 1]);
+
+        //初めてアイテムをもらった場合
+        if ($existItem === null)
+        {
+            ItemInstance::create([
+                'manage_id' => $manageId,
+                'item_id'   => $itemId,
+                'amount'    => $addValue,
+            ]);
+        }
+
+        //既にアイテムが存在していた場合
+        else
+        {
+            $existItem->update([
+                'amount' => $currentAmount + $addValue,
+            ]);
+        }
     }
 }
