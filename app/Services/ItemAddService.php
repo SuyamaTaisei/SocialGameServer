@@ -63,8 +63,8 @@ class ItemAddService
         //上限値に応じた追加プレゼント数の取得
         $addValue = min($amount, config('common.MAX_ITEM_INSTANCE') - $currentAmount);
 
-        //プレゼントインスタンスが無い か 最大所持数の場合
-        if ($existPresent === null || $currentAmount >= config('common.MAX_ITEM_INSTANCE'))
+        //プレゼントインスタンスが無い か 受け取り済み か 最大所持数の場合
+        if ($existPresent === null || $existPresent->received == 1 || $currentAmount >= config('common.MAX_ITEM_INSTANCE'))
         {
             PresentInstance::create([
                 'manage_id' => $manageId,
