@@ -56,10 +56,15 @@ class ItemAddService
     //プレゼント追加用メソッド
     public function AddPresent($manageId, $category, $name, $content, $amount)
     {
-        $existPresent = PresentInstance::where('manage_id', $manageId)->where('content', $content)->lockForUpdate()->first();
+        //インスタンスIDの降順でプレゼントレコードを取得
+        $existPresent = PresentInstance::where('manage_id', $manageId)->where('content', $content)->orderByDesc('id')->lockForUpdate()->first();
         $currentAmount = $existPresent?->amount ?? 0;
 
-        if ($existPresent === null)
+        //上限値に応じた追加プレゼント数の取得
+        $addValue = min($amount, config('common.MAX_ITEM_INSTANCE') - $currentAmount);
+
+        //プレゼントインスタンスが無い か 最大所持数の場合
+        if ($existPresent === null || $currentAmount >= config('common.MAX_ITEM_INSTANCE'))
         {
             PresentInstance::create([
                 'manage_id' => $manageId,
@@ -73,7 +78,7 @@ class ItemAddService
         else
         {
             $existPresent->update([
-                'amount' => $currentAmount + $amount,
+                'amount' => $currentAmount + $addValue,
             ]);
         }
     }
