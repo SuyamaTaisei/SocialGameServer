@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Models\ItemInstance;
+use App\Models\PresentInstance;
+
+use Carbon\Carbon;
 
 //アイテム追加用Serviceクラス
 class ItemAddService
 {
-    public function AddItem(int $manageId, int $itemId, int $amountValue)
+    public function AddItem(int $manageId, $itemCategory, $itemName, int $itemId, int $amountValue)
     {
         //item_idを取得
         $existItem = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->lockForUpdate()->first();
@@ -15,9 +18,10 @@ class ItemAddService
         //現在のアイテム数を取得、何もアイテムが無ければ0を取得
         $currentAmount = $existItem?->amount ?? 0;
 
-        //上限値を超えた場合は何もしない
+        //上限値を超えた場合はプレゼント行き
         if ($currentAmount >= config('common.MAX_ITEM_INSTANCE'))
         {
+            $this->AddPresent($manageId, $itemCategory, $itemName, $itemId, $amountValue);
             return;
         }
 
@@ -44,6 +48,36 @@ class ItemAddService
         else
         {
             $existItem->update([
+                'amount' => $currentAmount + $addValue,
+            ]);
+        }
+    }
+
+    //プレゼント追加用メソッド
+    public function AddPresent($manageId, $category, $name, $content, $amount)
+    {
+        //インスタンスIDの降順でプレゼントレコードを取得
+        $existPresent = PresentInstance::where('manage_id', $manageId)->where('content', $content)->orderByDesc('id')->lockForUpdate()->first();
+        $currentAmount = $existPresent?->amount ?? 0;
+
+        //上限値に応じた追加プレゼント数の取得
+        $addValue = min($amount, config('common.MAX_ITEM_INSTANCE') - $currentAmount);
+
+        //プレゼントインスタンスが無い か 受け取り済み か 最大所持数の場合
+        if ($existPresent === null || $existPresent->received == 1 || $currentAmount >= config('common.MAX_ITEM_INSTANCE'))
+        {
+            PresentInstance::create([
+                'manage_id' => $manageId,
+                'present_category' => $category,
+                'present_name' => $name,
+                'content' => $content,
+                'amount' => $amount,
+                'period' => Carbon::now()->addDays(3),
+            ]);
+        }
+        else
+        {
+            $existPresent->update([
                 'amount' => $currentAmount + $addValue,
             ]);
         }

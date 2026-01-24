@@ -11,6 +11,7 @@ use App\Models\CharacterInstance;
 use App\Models\CharacterData;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
+use App\Models\PresentInstance;
 
 use App\Services\ItemAddService;
 use App\Services\GachaCalcService;
@@ -65,6 +66,7 @@ class GachaExecuteController extends Controller
             'wallets' => Wallet::where('manage_id', $manageId)->first(),
             'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
             'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+            'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
             'gacha_results' => $getCharacterId,
             'new_characters' => $newCharacterId,
             'single_exchange_items' => $singleExchangeItem,
