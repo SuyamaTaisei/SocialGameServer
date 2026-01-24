@@ -20,6 +20,7 @@ class PresentReceivedService
 
             foreach($presents as $data)
             {
+                $id = $data['instance_id'];
                 $category = $data['category'];
                 $content = $data['content'];
                 $amount = $data['amount'];
@@ -27,7 +28,7 @@ class PresentReceivedService
                 switch($category)
                 {
                     case 1001: $itemData = ItemData::where('id', $content)->lockForUpdate()->first();
-                               $this->ReceivedItem($manageId, $itemData->item_category, $content, $amount);
+                               $this->ReceivedItem($manageId, $id, $itemData->item_category, $content, $amount);
                         break;
                     case 2001: $walletData->update(['gem_paid_amount' => $walletData->gem_paid_amount + $content * $amount]);
                         break;
@@ -39,7 +40,7 @@ class PresentReceivedService
     }
 
     //プレゼント(アイテム)受け取り用メソッド
-    public function ReceivedItem(int $manageId, $category, int $itemId, int $amountValue)
+    public function ReceivedItem(int $manageId, $id, $category, int $itemId, int $amountValue)
     {
         //item_idを取得
         $existItem = ItemInstance::where('manage_id', $manageId)->where('item_id', $itemId)->lockForUpdate()->first();
@@ -51,7 +52,7 @@ class PresentReceivedService
         $addValue = min($amountValue, config('common.MAX_ITEM_INSTANCE') - $currentAmount);
 
         //受け取った処理
-        $presentData = PresentInstance::where('manage_id', $manageId)->where('present_category', $category)->where('content', $itemId)->lockForUpdate()->first();
+        $presentData = PresentInstance::where('id', $id)->where('manage_id', $manageId)->where('present_category', $category)->where('content', $itemId)->lockForUpdate()->first();
         $presentData->update(['received' => 1]);
 
         //初めてアイテムをもらった場合
