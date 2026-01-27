@@ -7,6 +7,8 @@ use App\Models\PresentInstance;
 use App\Models\ItemData;
 use App\Models\Wallet;
 
+use Carbon\Carbon;
+
 use Illuminate\Support\Facades\DB;
 
 //プレゼント受け取り用サービス
@@ -53,7 +55,10 @@ class PresentReceivedService
 
         //受け取った処理
         $presentData = PresentInstance::where('id', $id)->where('manage_id', $manageId)->where('present_category', $category)->where('content', $itemId)->lockForUpdate()->first();
-        $presentData->update(['received' => 1]);
+        $presentData->update([
+            'received' => 1,
+            'updated_at' => Carbon::now(),
+        ]);
 
         //初めてアイテムをもらった場合
         if ($existItem === null)
