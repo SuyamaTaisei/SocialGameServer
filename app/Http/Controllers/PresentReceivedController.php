@@ -30,6 +30,7 @@ class PresentReceivedController extends Controller
         //レスポンスデータ
         $response =
         [
+            'users' => User::where('manage_id', $manageId)->first(),
             'wallets' => Wallet::where('manage_id', $manageId)->first(),
             'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
             'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
