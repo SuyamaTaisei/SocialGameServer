@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\CharacterInstance;
 use App\Models\ItemInstance;
+use App\Models\PresentInstance;
 
 use App\Services\ItemAddService;
 use App\Services\PresentReceivedService;
@@ -31,6 +32,7 @@ class PresentReceivedController extends Controller
         [
             'wallets' => Wallet::where('manage_id', $manageId)->first(),
             'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+            'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
         ];
 
         return response()->json($response);
