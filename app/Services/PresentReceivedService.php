@@ -2,43 +2,65 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\ItemInstance;
 use App\Models\PresentInstance;
 use App\Models\ItemData;
 use App\Models\Wallet;
 
 use Carbon\Carbon;
+use Throwable;
 
 use Illuminate\Support\Facades\DB;
 
 //プレゼント受け取り用サービス
 class PresentReceivedService
 {
-    public function PresentReceived($manageId, $presents)
+    public function PresentReceived(&$result, $manageId, $presents)
     {
-        DB::transaction(function() use ($manageId, $presents)
+        try
         {
-            $walletData = Wallet::where('manage_id', $manageId)->lockForUpdate()->first();
-
-            foreach($presents as $data)
+            DB::transaction(function() use (&$result, $manageId, $presents)
             {
-                $id = $data['instance_id'];
-                $category = $data['category'];
-                $content = $data['content'];
-                $amount = $data['amount'];
-
-                switch($category)
+                $walletData = Wallet::where('manage_id', $manageId)->lockForUpdate()->first();
+    
+                foreach($presents as $data)
                 {
-                    case 1001: $itemData = ItemData::where('id', $content)->lockForUpdate()->first();
-                               $this->ReceivedItem($manageId, $id, $itemData->item_category, $content, $amount);
-                        break;
-                    case 2001: $walletData->update(['gem_paid_amount' => $walletData->gem_paid_amount + $content * $amount]);
-                        break;
-                    case 2002: $walletData->update(['coin_amount' => $walletData->coin_amount + $content * $amount]);
-                        break;
+                    $id = $data['instance_id'];
+                    $category = $data['category'];
+                    $content = $data['content'];
+                    $amount = $data['amount'];
+    
+                    $presentData = PresentInstance::where('id', $id)->where('manage_id', $manageId)->where('present_category', $category)->where('content', $content)->lockForUpdate()->first();
+
+                    //受け取っていない かつ 現在時刻が受取期限を過ぎたら削除
+                    if ($presentData->received == 0 && Carbon::now() > $presentData->period)
+                    {
+                        throw new \RuntimeException("プレゼント受取期限を超過している");
+                    }
+
+                    //カテゴリ毎に受け取る
+                    switch($category)
+                    {
+                        case 1001: $itemData = ItemData::where('id', $content)->lockForUpdate()->first();
+                                   $this->ReceivedItem($manageId, $id, $itemData->item_category, $content, $amount);
+                            break;
+                        case 2001: $walletData->update(['gem_paid_amount' => $walletData->gem_paid_amount + $content * $amount]);
+                            break;
+                        case 2002: $walletData->update(['coin_amount' => $walletData->coin_amount + $content * $amount]);
+                            break;
+                    }
                 }
-            }
-        });
+
+                $result = config('common.RESPONSE_SUCCESS');
+            });
+        }
+        catch (Throwable $e)
+        {
+            //一括受取時に期限内と期限超えの両方が含まれる場合に処理を無かった事にする必要があるため、自動ロールバック
+            PresentInstance::where('manage_id', $manageId)->where('received', 0)->where('period', '<', now())->delete();
+            $result = config('common.RESPONSE_ERROR');
+        }
     }
 
     //プレゼント(アイテム)受け取り用メソッド

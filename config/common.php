@@ -32,9 +32,10 @@ return
     'ERRCODE_VALIDATION' => 100,
     'ERRCODE_LOGIN_SESSION' => 403,
 
-    //支払い関連
+    //エラーコード
     'ERRCODE_NOT_PAYMENT' => 510,
     'ERRCODE_LIMIT_WALLETS' => 511,
+    'ERRCODE_PRESENT_RECEIVED' => 520,
 
     //ショップ関連
     'MAX_CURRENCY_VALUE' => 999999,

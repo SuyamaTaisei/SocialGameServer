@@ -15,8 +15,10 @@ use Illuminate\Http\Request;
 
 class PresentReceivedController extends Controller
 {
-    public function __invoke(Request $request, PresentReceivedService $presentReceivedService, ItemAddService $itemAddService)
+    public function __invoke(Request $request, PresentReceivedService $presentReceivedService)
     {
+        $result = "";
+
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
@@ -25,16 +27,30 @@ class PresentReceivedController extends Controller
         $presents = $request->input('presents', []);
 
         //プレゼント受け取り用サービス
-        $presentReceivedService->PresentReceived($manageId, $presents, $itemAddService);
+        $presentReceivedService->PresentReceived($result, $manageId, $presents);
 
-        //レスポンスデータ
-        $response =
-        [
-            'users' => User::where('manage_id', $manageId)->first(),
-            'wallets' => Wallet::where('manage_id', $manageId)->first(),
-            'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
-            'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
-        ];
+        switch($result)
+        {
+            case config('common.RESPONSE_ERROR'):
+                $response =
+                [
+                    'errcode' => config('common.ERRCODE_PRESENT_RECEIVED'),
+                    'users' => User::where('manage_id', $manageId)->first(),
+                    'wallets' => Wallet::where('manage_id', $manageId)->first(),
+                    'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+                    'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
+                ];
+                break;
+            case config('common.RESPONSE_SUCCESS'):
+                $response =
+                [
+                    'users' => User::where('manage_id', $manageId)->first(),
+                    'wallets' => Wallet::where('manage_id', $manageId)->first(),
+                    'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
+                    'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
+                ];
+                break;
+        }
 
         return response()->json($response);
     }
