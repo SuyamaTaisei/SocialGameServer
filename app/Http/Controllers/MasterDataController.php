@@ -20,6 +20,8 @@ use App\Models\GachaData;
 
 use App\Models\PresentCategory;
 
+use App\Models\MissionData;
+
 class MasterDataController extends Controller
 {
     public function __invoke(Request $request)
@@ -42,6 +44,8 @@ class MasterDataController extends Controller
 
 		$present_categories = PresentCategory::GetMasterPresentCategories();
 
+		$mission_data = MissionData::GetMasterMissionData();
+
 		$response = 
         [
 			'master_data_version' => config('common.MASTER_DATA_VERSION'),
@@ -61,6 +65,8 @@ class MasterDataController extends Controller
 			'gacha_data' => $gacha_data,
 
 			'present_categories' => $present_categories,
+
+			'mission_data' => $mission_data,
 		];
 
 		return response()->json($response);

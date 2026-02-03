@@ -18,6 +18,8 @@ use App\Models\GachaData;
 
 use App\Models\PresentCategory;
 
+use App\Models\MissionData;
+
 //マスターデータ用サービス
 class MasterDataService
 {
@@ -46,6 +48,8 @@ class MasterDataService
         $master_data_list['gacha_data'] = GachaData::all();
 
         $master_data_list['present_categories'] = PresentCategory::all();
+
+        $master_data_list['mission_data'] = MissionData::all();
 
         //マスタデータをJSON形式で作成
         $json = json_encode($master_data_list);
