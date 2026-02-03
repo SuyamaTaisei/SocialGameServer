@@ -21,6 +21,7 @@ use App\Models\GachaData;
 use App\Models\PresentCategory;
 
 use App\Models\MissionData;
+use App\Models\MissionCategory;
 
 class MasterDataController extends Controller
 {
@@ -45,6 +46,7 @@ class MasterDataController extends Controller
 		$present_categories = PresentCategory::GetMasterPresentCategories();
 
 		$mission_data = MissionData::GetMasterMissionData();
+		$mission_categories = MissionCategory::GetMasterMissionCategories();
 
 		$response = 
         [
@@ -67,6 +69,7 @@ class MasterDataController extends Controller
 			'present_categories' => $present_categories,
 
 			'mission_data' => $mission_data,
+			'mission_categories' => $mission_categories,
 		];
 
 		return response()->json($response);
