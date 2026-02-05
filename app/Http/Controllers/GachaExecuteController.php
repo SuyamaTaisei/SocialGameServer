@@ -12,22 +12,27 @@ use App\Models\CharacterData;
 use App\Models\ItemInstance;
 use App\Models\ItemData;
 use App\Models\PresentInstance;
+use App\Models\MissionInstance;
 
 use App\Services\ItemAddService;
 use App\Services\GachaCalcService;
 use App\Services\PaymentService;
 use App\Services\GachaResultService;
+use App\Services\MissionProgressService;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class GachaExecuteController extends Controller
 {
-    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService, GachaResultService $gachaResultService)
+    public function __invoke(Request $request, ItemAddService $itemAddService, GachaCalcService $gachaCalcService, PaymentService $paymentService, GachaResultService $gachaResultService, MissionProgressService $missionProgressService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
+
+        //ミッションID
+        $missionId = $request->mission_id;
 
         //ガチャデータの取得
         $gachaId = GachaData::where('gacha_id', $request->gacha_id)->first();
@@ -57,7 +62,7 @@ class GachaExecuteController extends Controller
         $getCharacterId = $gachaCalcService->GachaCalculate($gachaCount, $request->gacha_id);
 
         //ガチャ結果サービス
-        $gachaResultService->GachaResult($manageId, $gachaId, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService);
+        $gachaResultService->GachaResult($manageId, $missionId, $gachaId, $gachaCount, $getCharacterId, $newCharacterId, $totalExchangeItem, $singleExchangeItem, $itemAddService, $missionProgressService);
 
         //レスポンスデータ
         $response =
@@ -67,6 +72,7 @@ class GachaExecuteController extends Controller
             'character_instances' => CharacterInstance::where('manage_id', $manageId)->get(),
             'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
             'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
+            'mission_instances' => MissionInstance::where('manage_id', $manageId)->get(),
             'gacha_results' => $getCharacterId,
             'new_characters' => $newCharacterId,
             'single_exchange_items' => $singleExchangeItem,

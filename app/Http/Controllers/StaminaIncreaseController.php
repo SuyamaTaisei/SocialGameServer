@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\MissionInstance;
+use App\Services\MissionProgressService;
 
 use App\Services\PaymentService;
 
@@ -13,10 +15,13 @@ use Illuminate\Http\Request;
 
 class StaminaIncreaseController extends Controller
 {
-    public function __invoke(Request $request, PaymentService $paymentService)
+    public function __invoke(Request $request, PaymentService $paymentService, MissionProgressService $missionProgressService)
     {
         //ユーザー情報
         $userData = User::where('id',$request->id)->first();
+
+        //ミッションID
+        $missionId = $request->mission_id;
 
         //ウォレット情報
         $walletData = Wallet::where('manage_id', $userData->manage_id)->first();
@@ -32,7 +37,7 @@ class StaminaIncreaseController extends Controller
             return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }
 
-        DB::transaction(function() use ($userData, $walletData, $paymentService)
+        DB::transaction(function() use ($userData, $missionId, $walletData, $paymentService, $missionProgressService)
         {
             //支払いサービス
             if (!$paymentService->PaymentGem($userData->manage_id, 50, 1))
@@ -48,6 +53,9 @@ class StaminaIncreaseController extends Controller
                 'last_stamina' => $userData->last_stamina + $addValue,
                 'stamina_updated' => Carbon::now()->format('Y-m-d H:i:s'),
             ]);
+
+            //ミッション進捗追加
+            $missionProgressService->MissionProgress($userData->manage_id, $missionId, 1);
         });
 
         //レスポンスデータ
@@ -55,6 +63,7 @@ class StaminaIncreaseController extends Controller
         [
             'users' => User::where('manage_id', $userData->manage_id)->first(),
             'wallets' => Wallet::where('manage_id', $userData->manage_id)->first(),
+            'mission_instances' => MissionInstance::where('manage_id', $userData->manage_id)->get(),
         ];
 
         return response()->json($response);
