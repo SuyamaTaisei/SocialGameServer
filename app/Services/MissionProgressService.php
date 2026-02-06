@@ -26,9 +26,9 @@ class MissionProgressService
         //既にミッションが存在していた場合
         else
         {
-            $aa = min($progressValue, $missionData->goal - $missionInstance->progress);
+            $value = min($progressValue, $missionData->goal - $missionInstance->progress);
             $missionInstance->update([
-                'progress' => $missionInstance->progress + $aa,
+                'progress' => $missionInstance->progress + $value,
             ]);
         }
     }
