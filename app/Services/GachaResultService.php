@@ -7,15 +7,16 @@ use App\Models\CharacterInstance;
 use App\Models\CharacterData;
 use App\Models\ItemData;
 use App\Services\ItemAddService;
+use App\Services\MissionProgressService;
 
 use Illuminate\Support\Facades\DB;
 
 //ガチャ結果用サービス
 class GachaResultService
 {
-    public function GachaResult($manageId, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, ItemAddService $itemAddService)
+    public function GachaResult($manageId, $missionId, $gachaId, $gachaCount, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $itemAddService, $missionProgressService)
     {
-        DB::transaction(function() use ($manageId, $gachaId, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $itemAddService)
+        DB::transaction(function() use ($manageId, $missionId, $gachaId, $gachaCount, $getCharacterId, &$newCharacterId, &$totalExchangeItem, &$singleExchangeItem, $itemAddService, $missionProgressService)
         {
             foreach($getCharacterId as $data)
             {
@@ -75,6 +76,9 @@ class GachaResultService
                     'character_id' => $data['character_id'],
                 ]);
             }
+
+            //ミッション進捗追加
+            $missionProgressService->MissionProgress($manageId, $missionId, $gachaCount);
         });
     }
 }

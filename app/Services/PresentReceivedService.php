@@ -8,6 +8,8 @@ use App\Models\PresentInstance;
 use App\Models\ItemData;
 use App\Models\Wallet;
 
+use App\Services\MissionProgressService;
+
 use Carbon\Carbon;
 use Throwable;
 
@@ -16,11 +18,11 @@ use Illuminate\Support\Facades\DB;
 //プレゼント受け取り用サービス
 class PresentReceivedService
 {
-    public function PresentReceived(&$result, $manageId, $presents)
+    public function PresentReceived(&$result, $manageId, $missionId, $presents, $missionProgressService)
     {
         try
         {
-            DB::transaction(function() use (&$result, $manageId, $presents)
+            DB::transaction(function() use (&$result, $manageId, $missionId, $presents, $missionProgressService)
             {
                 $walletData = Wallet::where('manage_id', $manageId)->lockForUpdate()->first();
     
@@ -50,6 +52,9 @@ class PresentReceivedService
                         case 2002: $walletData->update(['coin_amount' => $walletData->coin_amount + $content * $amount]);
                             break;
                     }
+
+                    //ミッション進捗追加
+                    $missionProgressService->MissionProgress($manageId, $missionId, 1);
                 }
 
                 $result = config('common.RESPONSE_SUCCESS');

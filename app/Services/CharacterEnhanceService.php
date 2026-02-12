@@ -4,15 +4,16 @@ namespace App\Services;
 
 use App\Models\ItemInstance;
 use App\Models\ItemData;
+use App\Services\MissionProgressService;
 
 use Illuminate\Support\Facades\DB;
 
 //キャラクター強化サービス
 class CharacterEnhanceService
 {
-    public function CharacterEnhance($manageId, $characterInstance, $items)
+    public function CharacterEnhance($manageId, $missionId, $characterInstance, $items, $missionProgressService)
     {
-        DB::transaction(function() use ($manageId, $characterInstance, $items)
+        DB::transaction(function() use ($manageId, $missionId, $characterInstance, $items, $missionProgressService)
         {
             $itemTotalAmount = 0;
 
@@ -59,6 +60,9 @@ class CharacterEnhanceService
                     'level' => $characterInstance->level + $addValue,
                 ]);
             }
+
+            //ミッション進捗追加
+            $missionProgressService->MissionProgress($manageId, $missionId, 1);
         });
     }
 }

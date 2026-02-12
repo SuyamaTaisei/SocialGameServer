@@ -7,15 +7,17 @@ use App\Models\Wallet;
 use App\Models\CharacterInstance;
 use App\Models\ItemInstance;
 use App\Models\PresentInstance;
+use App\Models\MissionInstance;
 
 use App\Services\ItemAddService;
 use App\Services\PresentReceivedService;
+use App\Services\MissionProgressService;
 
 use Illuminate\Http\Request;
 
 class PresentReceivedController extends Controller
 {
-    public function __invoke(Request $request, PresentReceivedService $presentReceivedService)
+    public function __invoke(Request $request, PresentReceivedService $presentReceivedService, MissionProgressService $missionProgressService)
     {
         $result = "";
 
@@ -23,11 +25,14 @@ class PresentReceivedController extends Controller
         $userData = User::where('id',$request->id)->first();
         $manageId = $userData->manage_id;
 
+        //ミッションID
+        $missionId = $request->mission_id;
+
         //カテゴリ、内容、数量のペア取得
         $presents = $request->input('presents', []);
 
         //プレゼント受け取り用サービス
-        $presentReceivedService->PresentReceived($result, $manageId, $presents);
+        $presentReceivedService->PresentReceived($result, $manageId, $missionId, $presents, $missionProgressService);
 
         switch($result)
         {
@@ -48,6 +53,7 @@ class PresentReceivedController extends Controller
                     'wallets' => Wallet::where('manage_id', $manageId)->first(),
                     'item_instances' => ItemInstance::where('manage_id', $manageId)->get(),
                     'present_instances' => PresentInstance::where('manage_id', $manageId)->get(),
+                    'mission_instances' => MissionInstance::where('manage_id', $manageId)->get(),
                 ];
                 break;
         }

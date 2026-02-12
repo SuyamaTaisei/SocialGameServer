@@ -7,6 +7,7 @@ use App\Models\Wallet;
 use App\Models\ItemInstance;
 use App\Models\CharacterInstance;
 use App\Models\PresentInstance;
+use App\Models\MissionInstance;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -29,6 +30,7 @@ class HomeController extends Controller
             'item_instances' => ItemInstance::where('manage_id', $userData->manage_id)->get(),
             'character_instances' => CharacterInstance::where('manage_id', $userData->manage_id)->get(),
             'present_instances' => PresentInstance::where('manage_id', $userData->manage_id)->get(),
+            'mission_instances' => MissionInstance::where('manage_id', $userData->manage_id)->get(),
         ];
 
         return response()->json($response);

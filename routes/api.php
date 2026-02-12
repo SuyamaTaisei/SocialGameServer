@@ -21,3 +21,4 @@ Route::post('/stamina_increase', App\Http\Controllers\StaminaIncreaseController:
 Route::post('/stamina_auto_increase', App\Http\Controllers\StaminaAutoIncreaseController::class); //スタミナ自然回復API
 Route::post('/present_received', App\Http\Controllers\PresentReceivedController::class); //プレゼント受け取りAPI
 Route::post('/present_delete', App\Http\Controllers\PresentDeleteController::class); //プレゼント削除API
+Route::post('/mission_received', App\Http\Controllers\MissionReceivedController::class); //ミッション受け取りAPI
