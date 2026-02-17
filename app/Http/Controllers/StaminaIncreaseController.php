@@ -32,7 +32,7 @@ class StaminaIncreaseController extends Controller
         }
 
         //スタミナが最大値を超えたら回復できない
-        if ($userData->last_stamina >= config('common.STAMINA_MOST_VALUE'))
+        if ($userData->last_stamina >= config('common.STAMINA_MAX_VALUE'))
         {
             return response()->json(['errcode' => config('common.RESPONSE_ERROR')]);
         }

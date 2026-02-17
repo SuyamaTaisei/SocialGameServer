@@ -44,13 +44,6 @@ return
     'PAYMENT_TYPE_GEM' => 'Gem',
     'PAYMENT_TYPE_COIN' => 'Coin',
 
-    //ガチャ実行関連
-    'GACHA_TOTAL_WEIGHT' => 100000,
-    'GACHA_RARITY_1000' => 1000,
-    'GACHA_RARITY_2000' => 2000,
-    'GACHA_RARITY_3000' => 3000,
-    'GACHA_RARITY_4000' => 4000,
-
     //インスタンス関連
     'MAX_ITEM_INSTANCE' => 99,
     'MAX_CHARACTER_LEVEL' => 100,
